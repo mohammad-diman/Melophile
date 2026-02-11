@@ -45,7 +45,7 @@ This project is built using modern Android development (MAD) practices:
 
 ## 📸 Screenshots
 
-*(Add your screenshots here!)*
+-
 
 ---
 
