@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "C:\\Users\\diman\\.gradle\\daemon\\8.11.1\\com.example.simplemusic.app-merged_res-61:\\font_sfprodisplay.otf.flat",
+        "source": "C:\\Users\\diman\\.gradle\\daemon\\8.11.1\\com.example.simplemusic.app-main-63:\\font\\sfprodisplay.otf"
+    },
+    {
+        "merged": "com.example.simplemusic.app-merged_res-61:/drawable_ic_logo.xml.flat",
+        "source": "com.example.simplemusic.app-main-63:/drawable/ic_logo.xml"
+    },
+    {
+        "merged": "C:\\Users\\diman\\.gradle\\daemon\\8.11.1\\com.example.simplemusic.app-merged_res-61:\\drawable_ic_home_custom.xml.flat",
+        "source": "C:\\Users\\diman\\.gradle\\daemon\\8.11.1\\com.example.simplemusic.app-main-63:\\drawable\\ic_home_custom.xml"
+    },
+    {
+        "merged": "C:\\Users\\diman\\.gradle\\daemon\\8.11.1\\com.example.simplemusic.app-merged_res-61:\\drawable_ic_library_custom.xml.flat",
+        "source": "C:\\Users\\diman\\.gradle\\daemon\\8.11.1\\com.example.simplemusic.app-main-63:\\drawable\\ic_library_custom.xml"
+    }
+]

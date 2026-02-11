@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    
+    <!-- Background Circle with subtle transparency -->
+    <path
+        android:fillColor="#1A2979FF"
+        android:pathData="M50,50m-45,0a45,45 0,1 1,90 0a45,45 0,1 1,-90 0" />
+    
+    <!-- Main Logo Shape: Stylized Note + Wave -->
+    <path
+        android:fillColor="#2979FF"
+        android:pathData="M42,25 L42,65 C38,62 32,62 28,65 C22,69 22,75 28,79 C34,83 42,81 46,77 C48,73 48,35 48,35 L75,28 L75,45 C71,42 65,42 61,45 C55,49 55,55 61,59 C67,63 75,61 79,57 C81,53 81,20 81,20 L42,25 Z" />
+    
+    <!-- Sound Waves decoration -->
+    <path
+        android:fillColor="#2979FF"
+        android:alpha="0.4"
+        android:pathData="M20,50 Q25,40 30,50 T40,50"
+        android:strokeWidth="2"
+        android:strokeColor="#2979FF" />
+</vector>
