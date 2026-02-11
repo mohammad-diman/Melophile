@@ -22,6 +22,10 @@ import com.example.simplemusic.model.Song
 import com.example.simplemusic.ui.theme.*
 import java.util.Calendar
 
+import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.vector.ImageVector
+
 @Composable
 fun HomeScreen(
     dailyMix: List<Song>,
@@ -38,15 +42,29 @@ fun HomeScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Simple Dashboard Header
-        Column(
+        // Dashboard Header with Decorative Icon
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(24.dp, 24.dp, 24.dp, 16.dp)
+                .padding(top = 24.dp, bottom = 16.dp)
         ) {
-            Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
-            Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
+            // Decorative Background Icon (Subtle)
+            Icon(
+                imageVector = Icons.Rounded.MusicNote,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(120.dp)
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 30.dp, y = (-20).dp)
+                    .alpha(0.05f), // Sangat samar
+                tint = SoftWhite
+            )
+
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
+                Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
+            }
         }
 
         LazyColumn(
