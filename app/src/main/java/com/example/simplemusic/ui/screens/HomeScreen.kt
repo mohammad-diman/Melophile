@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,6 +24,8 @@ import com.example.simplemusic.ui.theme.*
 import java.util.Calendar
 
 import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.rounded.Audiotrack
+import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -49,15 +52,35 @@ fun HomeScreen(
                 .statusBarsPadding()
                 .padding(top = 24.dp, bottom = 16.dp)
         ) {
-            // Decorative Background Icon (Subtle)
+            // Decorative Background Icons (Subtle Cluster)
             Icon(
                 imageVector = Icons.Rounded.MusicNote,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(140.dp)
                     .align(Alignment.CenterEnd)
-                    .offset(x = 30.dp, y = (-20).dp)
-                    .alpha(0.05f), // Sangat samar
+                    .offset(x = 40.dp, y = (-30).dp)
+                    .alpha(0.04f),
+                tint = SoftWhite
+            )
+            Icon(
+                imageVector = Icons.Rounded.GraphicEq,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(80.dp)
+                    .align(Alignment.CenterEnd)
+                    .offset(x = (-20).dp, y = 40.dp)
+                    .alpha(0.03f),
+                tint = SoftWhite
+            )
+            Icon(
+                imageVector = Icons.Rounded.Audiotrack,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(60.dp)
+                    .align(Alignment.CenterStart)
+                    .offset(x = (-10).dp, y = (-20).dp)
+                    .alpha(0.03f),
                 tint = SoftWhite
             )
 
