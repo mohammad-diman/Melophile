@@ -45,17 +45,8 @@ fun HomeScreen(
                 .statusBarsPadding()
                 .padding(24.dp, 24.dp, 24.dp, 16.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = com.example.simplemusic.R.drawable.ic_logo),
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp).padding(end = 12.dp)
-                )
-                Column {
-                    Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
-                    Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
-                }
-            }
+            Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
+            Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
         }
 
         LazyColumn(
