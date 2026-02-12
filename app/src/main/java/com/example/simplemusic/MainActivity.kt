@@ -56,7 +56,12 @@ class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
         val settingsManager = SettingsManager(newBase)
         val lang = settingsManager.getLanguage()
-        super.attachBaseContext(LocaleHelper.applyLocale(newBase, lang))
+        val context = if (lang != "system") {
+            LocaleHelper.applyLocale(newBase, lang)
+        } else {
+            newBase
+        }
+        super.attachBaseContext(context)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -164,7 +169,9 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                             currentLanguage = viewModel.currentLanguage,
                             onLanguageSelected = { 
                                 viewModel.updateLanguage(it)
-                                (context as? MainActivity)?.recreate()
+                                with(LocaleHelper) {
+                                    context.findActivity()?.recreate()
+                                }
                             }
                         )
                     }
