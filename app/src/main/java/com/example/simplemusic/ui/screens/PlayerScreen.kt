@@ -47,55 +47,130 @@ fun FullPlayerGlass(
     onSeekTo: (Long) -> Unit,
     onClose: () -> Unit
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "rotation")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "albumArtRotation"
+    )
+
+    val albumArtScale by animateFloatAsState(
+        targetValue = if (isPlaying) 1f else 0.85f,
+        animationSpec = spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessLow),
+        label = "albumArtScale"
+    )
+
     Box(modifier = Modifier.fillMaxSize().background(DarkBackground)) {
+        // Blurred Background
         AsyncImage(
             model = song.albumArtUri, contentDescription = null,
-            modifier = Modifier.fillMaxSize().blur(80.dp).graphicsLayer { alpha = 0.4f },
+            modifier = Modifier.fillMaxSize().blur(100.dp).graphicsLayer { alpha = 0.35f },
             contentScale = ContentScale.Crop
         )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp)
+                .padding(horizontal = 32.dp)
                 .statusBarsPadding()
-                .verticalScroll(rememberScrollState())
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onClose, modifier = Modifier.background(Color.White.copy(0.1f), CircleShape)) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onClose,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(Color.White.copy(0.08f), CircleShape)
+                        .border(1.dp, Color.White.copy(0.1f), CircleShape)
+                ) {
                     Icon(Icons.Rounded.ExpandMore, contentDescription = null, tint = SoftWhite)
                 }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    "Now Playing",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = SoftWhite.copy(0.7f),
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
-                        .background(if (isSleepTimerActive) accentColor.copy(0.2f) else Color.White.copy(0.1f))
+                        .background(if (isSleepTimerActive) accentColor.copy(0.15f) else Color.White.copy(0.08f))
+                        .border(1.dp, if (isSleepTimerActive) accentColor.copy(0.3f) else Color.White.copy(0.1f), RoundedCornerShape(20.dp))
                         .clickable { onSleepTimerClick() }
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Rounded.Timer, null, tint = if (isSleepTimerActive) accentColor else SoftWhite, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Rounded.Timer, 
+                        null, 
+                        tint = if (isSleepTimerActive) accentColor else SoftWhite, 
+                        modifier = Modifier.size(18.dp)
+                    )
                     if (isSleepTimerActive) {
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(sleepTimerText, color = accentColor, style = MaterialTheme.typography.labelMedium)
+                        Text(sleepTimerText, color = accentColor, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                     }
                 }
             }
             
-            Spacer(modifier = Modifier.weight(0.5f))
-            Card(
-                modifier = Modifier.fillMaxWidth().aspectRatio(1f).shadow(40.dp, RoundedCornerShape(32.dp)),
-                shape = RoundedCornerShape(32.dp)
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Premium Album Art
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .graphicsLayer {
+                        scaleX = albumArtScale
+                        scaleY = albumArtScale
+                        rotationZ = if (isPlaying) rotation else 0f
+                    }
+                    .shadow(60.dp, CircleShape, spotColor = accentColor.copy(0.5f))
+                    .border(8.dp, Color.White.copy(0.05f), CircleShape)
+                    .padding(8.dp)
+                    .clip(CircleShape)
             ) {
-                AsyncImage(model = song.albumArtUri, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                AsyncImage(
+                    model = song.albumArtUri,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
-            Spacer(modifier = Modifier.weight(0.5f))
-            Text(song.title, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), modifier = Modifier.basicMarquee())
-            Text(song.artist, style = MaterialTheme.typography.titleLarge, color = accentColor, fontWeight = FontWeight.Medium)
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Song Info
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    song.title,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp),
+                    maxLines = 1,
+                    modifier = Modifier.basicMarquee(),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    song.artist,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = accentColor,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
+                )
+            }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(48.dp))
             
-            // Komponen Slider Bergelombang Baru
+            // Progress Section
             WavySlider(
                 value = if (duration > 0) currentPosition.toFloat() / duration else 0f,
                 onValueChange = { onSeekTo((it * duration).toLong()) },
@@ -103,33 +178,73 @@ fun FullPlayerGlass(
                 accentColor = accentColor
             )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(formatTime(currentPosition), style = MaterialTheme.typography.labelSmall, color = MutedText)
-                Text(formatTime(duration), style = MaterialTheme.typography.labelSmall, color = MutedText)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(formatTime(currentPosition), style = MaterialTheme.typography.labelSmall, color = SoftWhite.copy(0.5f))
+                Text(formatTime(duration), style = MaterialTheme.typography.labelSmall, color = SoftWhite.copy(0.5f))
             }
             
-            Spacer(modifier = Modifier.height(40.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Refined Controls
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onShuffleToggle) {
+                    Icon(
+                        imageVector = Icons.Rounded.Shuffle,
+                        contentDescription = null,
+                        tint = if (isShuffleEnabled) accentColor else SoftWhite.copy(0.3f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    IconButton(onClick = onPrevious) {
+                        Icon(Icons.Rounded.SkipPrevious, null, modifier = Modifier.size(44.dp), tint = SoftWhite)
+                    }
+                    
+                    Surface(
+                        onClick = onTogglePlay,
+                        modifier = Modifier.size(84.dp),
+                        shape = CircleShape,
+                        color = accentColor,
+                        shadowElevation = 16.dp,
+                        tonalElevation = 8.dp
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                                null,
+                                modifier = Modifier.size(48.dp),
+                                tint = Color.White
+                            )
+                        }
+                    }
+
+                    IconButton(onClick = onNext) {
+                        Icon(Icons.Rounded.SkipNext, null, modifier = Modifier.size(44.dp), tint = SoftWhite)
+                    }
+                }
+
                 IconButton(onClick = onRepeatToggle) {
                     val icon = when (repeatMode) {
                         Player.REPEAT_MODE_ONE -> Icons.Rounded.RepeatOne
                         else -> Icons.Rounded.Repeat
                     }
-                    Icon(imageVector = icon, contentDescription = null, tint = if (repeatMode != Player.REPEAT_MODE_OFF) accentColor else SoftWhite.copy(0.5f))
-                }
-                IconButton(onClick = onPrevious) { Icon(Icons.Rounded.SkipPrevious, null, modifier = Modifier.size(40.dp), tint = SoftWhite) }
-                Box(
-                    modifier = Modifier.size(80.dp).clip(CircleShape).background(accentColor).clickable { onTogglePlay() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null, modifier = Modifier.size(40.dp), tint = Color.White)
-                }
-                IconButton(onClick = onNext) { Icon(Icons.Rounded.SkipNext, null, modifier = Modifier.size(40.dp), tint = SoftWhite) }
-                IconButton(onClick = onShuffleToggle) {
-                    Icon(imageVector = Icons.Rounded.Shuffle, contentDescription = null, tint = if (isShuffleEnabled) accentColor else SoftWhite.copy(0.5f))
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = if (repeatMode != Player.REPEAT_MODE_OFF) accentColor else SoftWhite.copy(0.3f),
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(64.dp))
         }
     }
 }
