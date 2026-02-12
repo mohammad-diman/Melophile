@@ -129,11 +129,18 @@ fun HomeScreen(
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text("Listening Stats", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             StatCard("Total Plays", stats["total"] ?: "0", Modifier.weight(1f))
                             StatCard("Top Artist", stats["artist"] ?: "N/A", Modifier.weight(1.5f))
                         }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Text("Weekly Activity", style = MaterialTheme.typography.labelSmall, color = MutedText)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        SimpleBarChart(
+                            data = listOf(0.4f, 0.7f, 0.5f, 0.9f, 0.6f, 0.3f, 0.8f), // Mock data
+                            modifier = Modifier.fillMaxWidth().height(80.dp)
+                        )
                     }
                 }
             }
@@ -185,6 +192,35 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(label, style = MaterialTheme.typography.labelSmall, color = MutedText)
             Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1)
+        }
+    }
+}
+
+@Composable
+fun SimpleBarChart(data: List<Float>, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val spacing = size.width / (data.size * 2)
+        val barWidth = size.width / (data.size * 2)
+        
+        data.forEachIndexed { index, value ->
+            val x = (index * 2 + 0.5f) * spacing + (index * barWidth)
+            val barHeight = size.height * value
+            
+            // Draw background bar
+            drawRoundRect(
+                color = SoftWhite.copy(alpha = 0.05f),
+                topLeft = androidx.compose.ui.geometry.Offset(x, 0f),
+                size = androidx.compose.ui.geometry.Size(barWidth, size.height),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(12.dp.toPx())
+            )
+            
+            // Draw actual data bar
+            drawRoundRect(
+                color = AccentColor,
+                topLeft = androidx.compose.ui.geometry.Offset(x, size.height - barHeight),
+                size = androidx.compose.ui.geometry.Size(barWidth, barHeight),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(12.dp.toPx())
+            )
         }
     }
 }
