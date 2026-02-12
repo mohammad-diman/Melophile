@@ -86,9 +86,10 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
 
     // Save route changes
     DisposableEffect(navController) {
-        val listener = navController.addOnDestinationChangedListener { _, destination, _ ->
+        val listener = androidx.navigation.NavController.OnDestinationChangedListener { _, destination, _ ->
             destination.route?.let { viewModel.settingsManager.saveLastRoute(it) }
         }
+        navController.addOnDestinationChangedListener(listener)
         onDispose {
             navController.removeOnDestinationChangedListener(listener)
         }
