@@ -26,15 +26,19 @@ import java.util.Calendar
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.simplemusic.ui.components.AboutDialog
 
 @Composable
 fun HomeScreen(
     dailyMix: List<Song>,
     stats: Map<String, String>,
+    accentColor: androidx.compose.ui.graphics.Color = AccentColor,
     onSongClick: (Song) -> Unit
 ) {
+    var showAboutDialog by remember { mutableStateOf(false) }
     val greeting = remember {
         when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
             in 5..11 -> "Good Morning"
@@ -85,9 +89,29 @@ fun HomeScreen(
             )
 
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
-                Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
+                        Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
+                    }
+                    IconButton(
+                        onClick = { showAboutDialog = true },
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(GlassColor.copy(alpha = 0.3f))
+                    ) {
+                        Icon(Icons.Rounded.Info, contentDescription = "About", tint = SoftWhite)
+                    }
+                }
             }
+        }
+
+        if (showAboutDialog) {
+            AboutDialog(onDismiss = { showAboutDialog = false }, accentColor = accentColor)
         }
 
         LazyColumn(

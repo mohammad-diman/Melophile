@@ -122,6 +122,7 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                         HomeScreen(
                             dailyMix = viewModel.dailyMix,
                             stats = viewModel.stats,
+                            accentColor = viewModel.dynamicAccentColor,
                             onSongClick = { viewModel.playSong(it) }
                         )
                     }
