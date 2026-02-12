@@ -10,14 +10,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.simplemusic.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +32,8 @@ fun SettingsScreen(
     currentUri: Uri?,
     accentColor: Color,
     onBack: () -> Unit,
-    onDirectorySelected: (Uri) -> Unit
+    onDirectorySelected: (Uri) -> Unit,
+    onRefresh: () -> Unit
 ) {
     var selectedPath by remember { 
         mutableStateOf(currentUri?.path?.split(":")?.last() ?: "All Device Music (Default)") 
@@ -44,14 +51,14 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings", fontWeight = FontWeight.Bold) },
+                title = { Text("Settings", fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = DarkBackground,
+                    containerColor = Color.Transparent,
                     titleContentColor = SoftWhite,
                     navigationIconContentColor = SoftWhite
                 )
@@ -59,58 +66,118 @@ fun SettingsScreen(
         },
         containerColor = DarkBackground
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp)
-        ) {
-            Text(
-                "Library Settings",
-                style = MaterialTheme.typography.titleMedium,
-                color = accentColor,
-                fontWeight = FontWeight.Bold
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Decorative background cluster (consistent with other screens)
+            val decoIcons = listOf(
+                Icons.Rounded.Settings to (120.dp to DpOffset(20.dp, (-20).dp)),
+                Icons.Rounded.Folder to (80.dp to DpOffset(100.dp, 40.dp))
             )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = GlassColor.copy(0.3f)),
-                onClick = { directoryLauncher.launch(null) }
+            decoIcons.forEachIndexed { index, (icon, pos) ->
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(pos.first)
+                        .align(if (index % 2 == 0) Alignment.TopEnd else Alignment.TopStart)
+                        .offset(x = pos.second.x, y = pos.second.y)
+                        .graphicsLayer { 
+                            rotationZ = (index * 45f) 
+                            alpha = 0.02f
+                        },
+                    tint = SoftWhite
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Text(
+                    "Library Management",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = accentColor,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Music Directory Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = GlassColor.copy(alpha = 0.4f)),
+                    border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f)),
+                    onClick = { directoryLauncher.launch(null) }
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(accentColor.copy(0.1f)),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        modifier = Modifier.padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Rounded.Folder, contentDescription = null, tint = accentColor)
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    Column {
-                        Text("Music Directory", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                        Text(selectedPath, style = MaterialTheme.typography.bodySmall, color = MutedText, maxLines = 1)
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(accentColor.copy(0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Rounded.Folder, contentDescription = null, tint = accentColor, modifier = Modifier.size(26.dp))
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column {
+                            Text("Music Directory", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                            Text(selectedPath, style = MaterialTheme.typography.bodySmall, color = MutedText, maxLines = 1)
+                        }
                     }
                 }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            TextButton(
-                onClick = { /* Reset Logic if needed */ },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Reset to Default (Scan All)", color = MutedText)
+                
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Refresh Library Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = GlassColor.copy(alpha = 0.4f)),
+                    border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f)),
+                    onClick = onRefresh
+                ) {
+                    Row(
+                        modifier = Modifier.padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.White.copy(0.05f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Rounded.Refresh, contentDescription = null, tint = SoftWhite, modifier = Modifier.size(26.dp))
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column {
+                            Text("Scan & Refresh", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                            Text("Manually search for new songs in directory", style = MaterialTheme.typography.bodySmall, color = MutedText)
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                TextButton(
+                    onClick = { /* Reset Logic */ },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text("Reset to All Device Music", color = MutedText.copy(alpha = 0.6f))
+                }
             }
         }
     }
+}
 }
