@@ -64,7 +64,7 @@ fun FullPlayerGlass(
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(20000, easing = LinearEasing),
-            repeatMode = Player.RepeatMode.Restart
+            repeatMode = RepeatMode.Restart
         ),
         label = "albumArtRotation"
     )
