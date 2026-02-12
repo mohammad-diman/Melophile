@@ -31,6 +31,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.simplemusic.model.Song
 import com.example.simplemusic.ui.theme.*
+import kotlinx.coroutines.launch
 import kotlin.math.sin
 
 @Composable
@@ -100,6 +101,7 @@ fun MiniPlayerGlass(
     onClick: () -> Unit
 ) {
     val offsetX = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
     
     Card(
         modifier = Modifier
@@ -113,18 +115,18 @@ fun MiniPlayerGlass(
                     onDragEnd = {
                         if (kotlin.math.abs(offsetX.value) > size.width / 3) {
                             val target = if (offsetX.value > 0) size.width.toFloat() else -size.width.toFloat()
-                            launch {
+                            scope.launch {
                                 offsetX.animateTo(target, tween(300))
                                 onDismiss()
                                 offsetX.snapTo(0f) // Reset for next time
                             }
                         } else {
-                            launch { offsetX.animateTo(0f, spring()) }
+                            scope.launch { offsetX.animateTo(0f, spring()) }
                         }
                     },
                     onHorizontalDrag = { change, dragAmount ->
                         change.consume()
-                        launch { offsetX.snapTo(offsetX.value + dragAmount) }
+                        scope.launch { offsetX.snapTo(offsetX.value + dragAmount) }
                     }
                 )
             }
