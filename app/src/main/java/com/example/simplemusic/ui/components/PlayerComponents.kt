@@ -69,21 +69,41 @@ fun SongCard(
         }
         
         Box {
-            IconButton(onClick = { showMenu = true }) {
-                Icon(Icons.Rounded.MoreVert, contentDescription = null, tint = MutedText)
+            IconButton(
+                onClick = { showMenu = true },
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(if (isCurrent) Color.White.copy(alpha = 0.1f) else Color.Transparent)
+            ) {
+                Icon(Icons.Rounded.MoreVert, contentDescription = null, tint = if (isCurrent) SoftWhite else MutedText)
             }
             DropdownMenu(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false },
-                modifier = Modifier.background(GlassColor)
+                modifier = Modifier
+                    .width(160.dp)
+                    .background(GlassColor.copy(alpha = 0.95f))
+                    .border(BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f)), RoundedCornerShape(16.dp))
             ) {
                 DropdownMenuItem(
-                    text = { Text("Edit Info", color = SoftWhite) },
-                    leadingIcon = { Icon(Icons.Rounded.Edit, null, tint = accentColor) },
+                    text = { Text("Edit Info", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium) },
+                    leadingIcon = { 
+                        Icon(
+                            Icons.Rounded.Edit, 
+                            null, 
+                            tint = accentColor,
+                            modifier = Modifier.size(20.dp)
+                        ) 
+                    },
                     onClick = {
                         showMenu = false
                         onEditClick()
-                    }
+                    },
+                    colors = MenuDefaults.itemColors(
+                        textColor = SoftWhite,
+                        leadingIconColor = accentColor
+                    )
                 )
             }
         }
