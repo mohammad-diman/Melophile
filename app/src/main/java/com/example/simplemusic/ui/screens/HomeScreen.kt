@@ -198,29 +198,43 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun SimpleBarChart(data: List<Float>, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        val spacing = size.width / (data.size * 2)
-        val barWidth = size.width / (data.size * 2)
-        
+    val days = listOf("M", "T", "W", "T", "F", "S", "S")
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
         data.forEachIndexed { index, value ->
-            val x = (index * 2 + 0.5f) * spacing + (index * barWidth)
-            val barHeight = size.height * value
-            
-            // Draw background bar
-            drawRoundRect(
-                color = SoftWhite.copy(alpha = 0.05f),
-                topLeft = androidx.compose.ui.geometry.Offset(x, 0f),
-                size = androidx.compose.ui.geometry.Size(barWidth, size.height),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(12.dp.toPx())
-            )
-            
-            // Draw actual data bar
-            drawRoundRect(
-                color = AccentColor,
-                topLeft = androidx.compose.ui.geometry.Offset(x, size.height - barHeight),
-                size = androidx.compose.ui.geometry.Size(barWidth, barHeight),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(12.dp.toPx())
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Bar container
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SoftWhite.copy(alpha = 0.05f))
+                ) {
+                    // Actual progress bar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight(value.coerceIn(0.05f, 1f)) // Ensure at least a small visible bar
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(AccentColor)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                // Day Label
+                Text(
+                    text = days.getOrElse(index) { "" },
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                    color = if (value > 0.7f) AccentColor else MutedText,
+                    fontWeight = if (value > 0.7f) FontWeight.Bold else FontWeight.Normal
+                )
+            }
         }
     }
 }
