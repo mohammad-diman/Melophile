@@ -72,6 +72,28 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
     val context = LocalContext.current
     val navController = rememberNavController()
 
+    // Restore last route
+    LaunchedEffect(Unit) {
+        val lastRoute = viewModel.settingsManager.getLastRoute()
+        if (lastRoute != null && lastRoute != NavScreen.Home.route) {
+            navController.navigate(lastRoute) {
+                popUpTo(NavScreen.Home.route) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
+    // Save route changes
+    DisposableEffect(navController) {
+        val listener = navController.addOnDestinationChangedListener { _, destination, _ ->
+            destination.route?.let { viewModel.settingsManager.saveLastRoute(it) }
+        }
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (isGranted) viewModel.loadSongs(context)
     }

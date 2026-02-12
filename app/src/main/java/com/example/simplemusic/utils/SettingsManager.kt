@@ -55,4 +55,29 @@ class SettingsManager(private val context: Context) {
         val name = prefs.getString("sort_order", com.example.simplemusic.model.SortOrder.TITLE.name)
         return try { com.example.simplemusic.model.SortOrder.valueOf(name!!) } catch(e: Exception) { com.example.simplemusic.model.SortOrder.TITLE }
     }
+
+    fun saveShuffleMode(enabled: Boolean) {
+        prefs.edit().putBoolean("shuffle_mode", enabled).apply()
+    }
+
+    fun getShuffleMode(): Boolean {
+        return prefs.getBoolean("shuffle_mode", false)
+    }
+
+    fun saveRepeatMode(mode: Int) {
+        prefs.edit().putInt("repeat_mode", mode).apply()
+    }
+
+    fun getRepeatMode(): Int {
+        // Default to REPEAT_MODE_ALL (2)
+        return prefs.getInt("repeat_mode", 2)
+    }
+
+    fun saveLastRoute(route: String) {
+        prefs.edit().putString("last_route", route).apply()
+    }
+
+    fun getLastRoute(): String? {
+        return prefs.getString("last_route", null)
+    }
 }

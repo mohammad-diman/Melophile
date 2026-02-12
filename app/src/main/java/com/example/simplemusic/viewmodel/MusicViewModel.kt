@@ -37,7 +37,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     var player: Player? by mutableStateOf(null)
     var isControllerReady by mutableStateOf(false)
     
-    private val settingsManager = SettingsManager(application)
+    val settingsManager = SettingsManager(application)
     private var sleepTimer: CountDownTimer? = null
 
     // States
@@ -48,8 +48,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
     var currentSong by mutableStateOf<Song?>(null)
     var isPlaying by mutableStateOf(false)
-    var repeatMode by mutableStateOf(Player.REPEAT_MODE_ALL)
-    var isShuffleEnabled by mutableStateOf(false)
+    var repeatMode by mutableStateOf(settingsManager.getRepeatMode())
+    var isShuffleEnabled by mutableStateOf(settingsManager.getShuffleMode())
     var showFullPlayer by mutableStateOf(false)
     var currentPosition by mutableLongStateOf(0L)
     var duration by mutableLongStateOf(0L)
@@ -102,7 +102,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun setupPlayerListener() {
-        player?.repeatMode = Player.REPEAT_MODE_ALL
+        player?.repeatMode = repeatMode
+        player?.shuffleModeEnabled = isShuffleEnabled
         player?.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlayingState: Boolean) { isPlaying = isPlayingState }
             override fun onPlaybackStateChanged(playbackState: Int) { 
@@ -117,8 +118,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     updateDynamicColor(currentSong!!)
                 }
             }
-            override fun onRepeatModeChanged(mode: Int) { repeatMode = mode }
-            override fun onShuffleModeEnabledChanged(enabled: Boolean) { isShuffleEnabled = enabled }
+            override fun onRepeatModeChanged(mode: Int) { 
+                repeatMode = mode 
+                settingsManager.saveRepeatMode(mode)
+            }
+            override fun onShuffleModeEnabledChanged(enabled: Boolean) { 
+                isShuffleEnabled = enabled 
+                settingsManager.saveShuffleMode(enabled)
+            }
         })
     }
 
