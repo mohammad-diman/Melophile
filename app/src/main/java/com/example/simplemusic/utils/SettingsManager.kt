@@ -38,4 +38,21 @@ class SettingsManager(private val context: Context) {
     fun getLastPlayedSongId(): Long {
         return prefs.getLong("last_song_id", -1L)
     }
+
+    fun saveLastPosition(position: Long) {
+        prefs.edit().putLong("last_position", position).apply()
+    }
+
+    fun getLastPosition(): Long {
+        return prefs.getLong("last_position", 0L)
+    }
+
+    fun saveSortOrder(order: com.example.simplemusic.model.SortOrder) {
+        prefs.edit().putString("sort_order", order.name).apply()
+    }
+
+    fun getSortOrder(): com.example.simplemusic.model.SortOrder {
+        val name = prefs.getString("sort_order", com.example.simplemusic.model.SortOrder.TITLE.name)
+        return try { com.example.simplemusic.model.SortOrder.valueOf(name!!) } catch(e: Exception) { com.example.simplemusic.model.SortOrder.TITLE }
+    }
 }

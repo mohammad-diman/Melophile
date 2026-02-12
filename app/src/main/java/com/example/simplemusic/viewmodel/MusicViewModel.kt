@@ -42,7 +42,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     // States
     var rawSongs by mutableStateOf(listOf<Song>())
-    var currentSortOrder by mutableStateOf(SortOrder.TITLE)
+    var currentSortOrder by mutableStateOf(settingsManager.getSortOrder())
     var selectedFolderUri by mutableStateOf(settingsManager.getMusicDirectory())
     var searchQuery by mutableStateOf("")
     
@@ -148,8 +148,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private fun startPositionUpdateLoop() {
         viewModelScope.launch {
             while (true) {
-                if (isPlaying) currentPosition = player?.currentPosition ?: 0L
-                delay(500)
+                if (isPlaying) {
+                    currentPosition = player?.currentPosition ?: 0L
+                    settingsManager.saveLastPosition(currentPosition)
+                }
+                delay(1000)
             }
         }
     }
@@ -176,16 +179,12 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun updatePlayerPlaylist() {
         val mediaItems = songs.map { MediaItem.fromUri(it.uri) }
-        player?.setMediaItems(mediaItems)
         
-        // If we restored a song, seek to its index
-        currentSong?.let { song ->
-            val index = songs.indexOfFirst { it.id == song.id }
-            if (index != -1) {
-                player?.seekTo(index, 0L)
-            }
-        }
-        
+        val lastId = settingsManager.getLastPlayedSongId()
+        val index = if (lastId != -1L) songs.indexOfFirst { it.id == lastId }.coerceAtLeast(0) else 0
+        val position = settingsManager.getLastPosition()
+
+        player?.setMediaItems(mediaItems, index, position)
         player?.prepare()
     }
 
@@ -222,6 +221,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         settingsManager.saveMusicDirectory(uri)
         selectedFolderUri = uri
         loadSongs(getApplication())
+    }
+    fun updateSortOrder(order: SortOrder) {
+        currentSortOrder = order
+        settingsManager.saveSortOrder(order)
+        updatePlayerPlaylist()
     }
     fun setSleepTimer(minutes: Int) {
         sleepTimer?.cancel()

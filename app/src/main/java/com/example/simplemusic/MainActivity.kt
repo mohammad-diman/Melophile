@@ -112,7 +112,7 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                             onSongClick = { viewModel.playSong(it) },
                             onEditClick = { viewModel.songToEdit = it },
                             onSettingsClick = { navController.navigate(NavScreen.Settings.route) },
-                            onSortChange = { viewModel.currentSortOrder = it }
+                            onSortChange = { viewModel.updateSortOrder(it) }
                         )
                     }
                     composable(NavScreen.Settings.route) {
