@@ -80,4 +80,15 @@ class SettingsManager(private val context: Context) {
     fun getLastRoute(): String? {
         return prefs.getString("last_route", null)
     }
+
+    fun saveSongOverride(songId: Long, title: String, artist: String) {
+        prefs.edit().putString("override_title_$songId", title).apply()
+        prefs.edit().putString("override_artist_$songId", artist).apply()
+    }
+
+    fun getSongOverride(songId: Long): Pair<String?, String?> {
+        val title = prefs.getString("override_title_$songId", null)
+        val artist = prefs.getString("override_artist_$songId", null)
+        return title to artist
+    }
 }

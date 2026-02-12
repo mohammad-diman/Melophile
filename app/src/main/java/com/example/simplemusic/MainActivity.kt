@@ -183,30 +183,54 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
         AlertDialog(
             onDismissRequest = { viewModel.songToEdit = null },
             containerColor = GlassColor,
-            title = { Text("Edit Music Info", fontWeight = FontWeight.Bold) },
+            shape = RoundedCornerShape(28.dp),
+            modifier = Modifier.border(BorderStroke(1.dp, SoftWhite.copy(0.1f)), RoundedCornerShape(28.dp)),
+            title = { 
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.Edit, null, tint = viewModel.dynamicAccentColor, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text("Edit Music Info", fontWeight = FontWeight.Bold, color = SoftWhite)
+                }
+            },
             text = {
-                Column {
-                    TextField(
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Preview Album Art
+                    AsyncImage(
+                        model = song.albumArtUri,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color.White.copy(0.05f)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    OutlinedTextField(
                         value = tempTitle,
                         onValueChange = { tempTitle = it },
-                        label = { Text("Title") },
+                        label = { Text("Title", color = MutedText) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent, 
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = viewModel.dynamicAccentColor
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = viewModel.dynamicAccentColor,
+                            unfocusedBorderColor = SoftWhite.copy(0.2f),
+                            focusedLabelColor = viewModel.dynamicAccentColor,
+                            cursorColor = viewModel.dynamicAccentColor
                         )
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = tempArtist,
                         onValueChange = { tempArtist = it },
-                        label = { Text("Artist") },
+                        label = { Text("Artist", color = MutedText) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent, 
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = viewModel.dynamicAccentColor
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = viewModel.dynamicAccentColor,
+                            unfocusedBorderColor = SoftWhite.copy(0.2f),
+                            focusedLabelColor = viewModel.dynamicAccentColor,
+                            cursorColor = viewModel.dynamicAccentColor
                         )
                     )
                 }
@@ -217,14 +241,15 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                         viewModel.updateSongInfo(song.id, tempTitle, tempArtist)
                         viewModel.songToEdit = null
                     },
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = viewModel.dynamicAccentColor)
                 ) {
-                    Text("Save Changes")
+                    Text("Save Info", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.songToEdit = null }) {
-                    Text("Cancel", color = SoftWhite)
+                    Text("Cancel", color = SoftWhite.copy(0.7f))
                 }
             }
         )

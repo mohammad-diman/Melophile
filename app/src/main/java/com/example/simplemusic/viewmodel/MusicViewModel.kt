@@ -165,7 +165,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadSongs(context: Context) {
-        rawSongs = fetchSongs(context, selectedFolderUri)
+        val fetched = fetchSongs(context, selectedFolderUri)
+        rawSongs = fetched.map { song ->
+            val override = settingsManager.getSongOverride(song.id)
+            song.copy(
+                title = override.first ?: song.title,
+                artist = override.second ?: song.artist
+            )
+        }
         
         // Restore last played song if nothing is currently playing
         if (currentSong == null) {
@@ -221,6 +228,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleShuffle() { player?.shuffleModeEnabled = !(player?.shuffleModeEnabled ?: false) }
     fun seekTo(pos: Long) = player?.seekTo(pos)
     fun updateSongInfo(songId: Long, newTitle: String, newArtist: String) {
+        settingsManager.saveSongOverride(songId, newTitle, newArtist)
         rawSongs = rawSongs.map { if (it.id == songId) it.copy(title = newTitle, artist = newArtist) else it }
         if (currentSong?.id == songId) currentSong = currentSong?.copy(title = newTitle, artist = newArtist)
     }
