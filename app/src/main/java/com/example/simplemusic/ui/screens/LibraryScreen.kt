@@ -26,6 +26,15 @@ import com.example.simplemusic.model.SortOrder
 import com.example.simplemusic.ui.theme.*
 import com.example.simplemusic.ui.components.SongCard
 
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.DpOffset
+import com.example.simplemusic.model.Song
+import com.example.simplemusic.model.SortOrder
+import com.example.simplemusic.ui.theme.*
+import com.example.simplemusic.ui.components.SongCard
+
 @Composable
 fun LibraryScreen(
     songs: List<Song>,
@@ -39,76 +48,104 @@ fun LibraryScreen(
     onSortChange: (SortOrder) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(top = 8.dp, start = 24.dp, end = 24.dp, bottom = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text("Your Library", style = MaterialTheme.typography.titleMedium, color = MutedText)
-                    Text("${songs.size} songs", style = MaterialTheme.typography.labelSmall, color = accentColor)
-                }
-                Row {
-                    Box {
-                        var showSortMenu by remember { mutableStateOf(false) }
-                        IconButton(onClick = { showSortMenu = true }) {
-                            Icon(Icons.Rounded.Sort, null, tint = SoftWhite)
-                        }
-                        DropdownMenu(
-                            expanded = showSortMenu,
-                            onDismissRequest = { showSortMenu = false },
-                            modifier = Modifier.background(GlassColor)
-                        ) {
-                            SortOrder.values().forEach { order ->
-                                DropdownMenuItem(
-                                    text = { Text(order.label, color = SoftWhite, style = MaterialTheme.typography.bodyMedium) },
-                                    onClick = { onSortChange(order); showSortMenu = false }
-                                )
-                            }
-                        }
-                    }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Rounded.Settings, null, tint = SoftWhite)
-                    }
-                }
+        Box(modifier = Modifier.fillMaxWidth()) {
+            // Decorative Background Icons Cluster
+            val decoIcons = listOf(
+                Icons.Rounded.QueueMusic to (120.dp to DpOffset(20.dp, (-20).dp)),
+                Icons.Rounded.Radio to (80.dp to DpOffset(100.dp, 40.dp)),
+                Icons.Rounded.LibraryMusic to (60.dp to DpOffset((-30).dp, 10.dp)),
+                Icons.Rounded.SpeakerGroup to (100.dp to DpOffset(220.dp, (-30).dp)),
+                Icons.Rounded.Piano to (70.dp to DpOffset(300.dp, 20.dp)),
+                Icons.Rounded.VolumeUp to (50.dp to DpOffset((-10).dp, 60.dp))
+            )
+
+            decoIcons.forEachIndexed { index, (icon, pos) ->
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(pos.first)
+                        .align(if (index % 2 == 0) Alignment.TopEnd else Alignment.TopStart)
+                        .offset(x = pos.second.x, y = pos.second.y)
+                        .graphicsLayer { 
+                            rotationZ = (index * 30f) 
+                            alpha = if (index % 3 == 0) 0.03f else 0.015f
+                        },
+                    tint = SoftWhite
+                )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            BasicTextField(
-                value = searchQuery,
-                onValueChange = onSearchChange,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(GlassColor.copy(alpha = 0.3f))
-                    .padding(horizontal = 12.dp),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = SoftWhite),
-                cursorBrush = SolidColor(accentColor),
-                singleLine = true,
-                decorationBox = { innerTextField ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Icon(Icons.Rounded.Search, null, tint = MutedText, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(modifier = Modifier.weight(1f)) {
-                            if (searchQuery.isEmpty()) {
-                                Text("Search library...", color = MutedText, style = MaterialTheme.typography.bodyMedium)
+                    .statusBarsPadding()
+                    .padding(top = 8.dp, start = 24.dp, end = 24.dp, bottom = 16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Your Library", style = MaterialTheme.typography.titleMedium, color = MutedText)
+                        Text("${songs.size} songs", style = MaterialTheme.typography.labelSmall, color = accentColor)
+                    }
+                    Row {
+                        Box {
+                            var showSortMenu by remember { mutableStateOf(false) }
+                            IconButton(onClick = { showSortMenu = true }) {
+                                Icon(Icons.Rounded.Sort, null, tint = SoftWhite)
                             }
-                            innerTextField()
+                            DropdownMenu(
+                                expanded = showSortMenu,
+                                onDismissRequest = { showSortMenu = false },
+                                modifier = Modifier.background(GlassColor)
+                            ) {
+                                SortOrder.values().forEach { order ->
+                                    DropdownMenuItem(
+                                        text = { Text(order.label, color = SoftWhite, style = MaterialTheme.typography.bodyMedium) },
+                                        onClick = { onSortChange(order); showSortMenu = false }
+                                    )
+                                }
+                            }
+                        }
+                        IconButton(onClick = onSettingsClick) {
+                            Icon(Icons.Rounded.Settings, null, tint = SoftWhite)
                         }
                     }
                 }
-            )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                BasicTextField(
+                    value = searchQuery,
+                    onValueChange = onSearchChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(GlassColor.copy(alpha = 0.3f))
+                        .padding(horizontal = 12.dp),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = SoftWhite),
+                    cursorBrush = SolidColor(accentColor),
+                    singleLine = true,
+                    decorationBox = { innerTextField ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(Icons.Rounded.Search, null, tint = MutedText, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (searchQuery.isEmpty()) {
+                                    Text("Search library...", color = MutedText, style = MaterialTheme.typography.bodyMedium)
+                                }
+                                innerTextField()
+                            }
+                        }
+                    }
+                )
+            }
         }
 
         LazyColumn(

@@ -57,44 +57,39 @@ fun HomeScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Dashboard Header with Decorative Icon
+        // Dashboard Header with Decorative Icons
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(top = 24.dp, bottom = 16.dp)
         ) {
-            // Decorative Background Icons (Subtle Cluster)
-            Icon(
-                imageVector = Icons.Rounded.MusicNote,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(140.dp)
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 40.dp, y = (-30).dp)
-                    .alpha(0.04f),
-                tint = SoftWhite
+            // Decorative Background Icons Cluster
+            val decoIcons = listOf(
+                Icons.Rounded.MusicNote to (140.dp to androidx.compose.ui.unit.DpOffset(40.dp, (-30).dp)),
+                Icons.Rounded.GraphicEq to (80.dp to androidx.compose.ui.unit.DpOffset((-20).dp, 40.dp)),
+                Icons.Rounded.Audiotrack to (60.dp to androidx.compose.ui.unit.DpOffset((-10).dp, (-20).dp)),
+                Icons.Rounded.Headset to (100.dp to androidx.compose.ui.unit.DpOffset(120.dp, 20.dp)),
+                Icons.Rounded.Album to (70.dp to androidx.compose.ui.unit.DpOffset(200.dp, (-40).dp)),
+                Icons.Rounded.MusicVideo to (50.dp to androidx.compose.ui.unit.DpOffset(280.dp, 30.dp)),
+                Icons.Rounded.MicExternalOn to (90.dp to androidx.compose.ui.unit.DpOffset((-60).dp, 10.dp))
             )
-            Icon(
-                imageVector = Icons.Rounded.GraphicEq,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.CenterEnd)
-                    .offset(x = (-20).dp, y = 40.dp)
-                    .alpha(0.03f),
-                tint = SoftWhite
-            )
-            Icon(
-                imageVector = Icons.Rounded.Audiotrack,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(60.dp)
-                    .align(Alignment.CenterStart)
-                    .offset(x = (-10).dp, y = (-20).dp)
-                    .alpha(0.03f),
-                tint = SoftWhite
-            )
+
+            decoIcons.forEachIndexed { index, (icon, pos) ->
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(pos.first)
+                        .align(if (index % 2 == 0) Alignment.CenterEnd else Alignment.CenterStart)
+                        .offset(x = pos.second.x, y = pos.second.y)
+                        .graphicsLayer { 
+                            rotationZ = (index * 45f) 
+                            alpha = if (index % 3 == 0) 0.04f else 0.02f
+                        },
+                    tint = SoftWhite
+                )
+            }
 
             IconButton(
                 onClick = { showAboutDialog = true },
