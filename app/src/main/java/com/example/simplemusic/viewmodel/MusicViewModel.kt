@@ -113,6 +113,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 if (index in songs.indices) {
                     currentSong = songs[index]
                     settingsManager.incrementPlayCount(currentSong!!.id)
+                    settingsManager.saveLastPlayedSongId(currentSong!!.id)
                     updateDynamicColor(currentSong!!)
                 }
             }
@@ -155,6 +156,19 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadSongs(context: Context) {
         rawSongs = fetchSongs(context, selectedFolderUri)
+        
+        // Restore last played song if nothing is currently playing
+        if (currentSong == null) {
+            val lastId = settingsManager.getLastPlayedSongId()
+            if (lastId != -1L) {
+                val lastSong = rawSongs.find { it.id == lastId }
+                if (lastSong != null) {
+                    currentSong = lastSong
+                    updateDynamicColor(lastSong)
+                }
+            }
+        }
+
         if (isControllerReady) {
             updatePlayerPlaylist()
         }
@@ -163,6 +177,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private fun updatePlayerPlaylist() {
         val mediaItems = songs.map { MediaItem.fromUri(it.uri) }
         player?.setMediaItems(mediaItems)
+        
+        // If we restored a song, seek to its index
+        currentSong?.let { song ->
+            val index = songs.indexOfFirst { it.id == song.id }
+            if (index != -1) {
+                player?.seekTo(index, 0L)
+            }
+        }
+        
         player?.prepare()
     }
 

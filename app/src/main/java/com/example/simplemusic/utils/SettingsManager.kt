@@ -30,4 +30,12 @@ class SettingsManager(private val context: Context) {
     fun getPlayCount(songId: Long): Int {
         return statsPrefs.getInt(songId.toString(), 0)
     }
+
+    fun saveLastPlayedSongId(songId: Long) {
+        prefs.edit().putLong("last_song_id", songId).apply()
+    }
+
+    fun getLastPlayedSongId(): Long {
+        return prefs.getLong("last_song_id", -1L)
+    }
 }
