@@ -117,11 +117,12 @@ fun LibraryScreen(
                     onValueChange = onSearchChange,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(GlassColor.copy(alpha = 0.3f))
-                        .padding(horizontal = 12.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = SoftWhite),
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(GlassColor.copy(alpha = 0.5f))
+                        .border(BorderStroke(1.dp, SoftWhite.copy(alpha = 0.15f)), RoundedCornerShape(16.dp))
+                        .padding(horizontal = 16.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = SoftWhite),
                     cursorBrush = SolidColor(accentColor),
                     singleLine = true,
                     decorationBox = { innerTextField ->
@@ -129,13 +130,30 @@ fun LibraryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            Icon(Icons.Rounded.Search, null, tint = MutedText, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                Icons.Rounded.Search, 
+                                null, 
+                                tint = accentColor.copy(alpha = 0.8f), 
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
                             Box(modifier = Modifier.weight(1f)) {
                                 if (searchQuery.isEmpty()) {
-                                    Text("Search library...", color = MutedText, style = MaterialTheme.typography.bodyMedium)
+                                    Text(
+                                        "Search for songs or artists...", 
+                                        color = MutedText.copy(alpha = 0.7f), 
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
                                 }
                                 innerTextField()
+                            }
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(
+                                    onClick = { onSearchChange("") },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(Icons.Rounded.Close, null, tint = MutedText, modifier = Modifier.size(18.dp))
+                                }
                             }
                         }
                     }
