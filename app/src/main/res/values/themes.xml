@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SimpleMusic" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.SimpleMusic" parent="android:Theme.Material.NoActionBar">
         <!-- Set the splash screen background -->
         <item name="android:windowBackground">@color/dark_background</item>
         <!-- Transparent status & navigation bars for Edge-to-Edge -->
