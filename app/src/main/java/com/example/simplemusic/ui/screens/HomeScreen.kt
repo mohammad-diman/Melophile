@@ -97,13 +97,23 @@ fun HomeScreen(
         ) {
             if (dailyMix.isNotEmpty()) {
                 item {
-                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                        Text("Daily Mix", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text("Based on your taste", style = MaterialTheme.typography.bodySmall, color = MutedText)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            items(dailyMix) { song ->
-                                DailyMixCard(song) { onSongClick(song) }
+                    Card(
+                        modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = CardDefaults.cardColors(containerColor = GlassColor.copy(alpha = 0.4f)),
+                        border = BorderStroke(1.dp, GlassColor.copy(alpha = 0.1f))
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Text("Daily Mix", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            Text("Based on your taste", style = MaterialTheme.typography.bodySmall, color = MutedText)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                contentPadding = PaddingValues(end = 4.dp)
+                            ) {
+                                items(dailyMix) { song ->
+                                    DailyMixCard(song) { onSongClick(song) }
+                                }
                             }
                         }
                     }
@@ -111,12 +121,19 @@ fun HomeScreen(
             }
 
             item {
-                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                    Text("Listening Stats", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        StatCard("Total Plays", stats["total"] ?: "0", Modifier.weight(1f))
-                        StatCard("Top Artist", stats["artist"] ?: "N/A", Modifier.weight(1.5f))
+                Card(
+                    modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = CardDefaults.cardColors(containerColor = GlassColor.copy(alpha = 0.4f)),
+                    border = BorderStroke(1.dp, GlassColor.copy(alpha = 0.1f))
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text("Listening Stats", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            StatCard("Total Plays", stats["total"] ?: "0", Modifier.weight(1f))
+                            StatCard("Top Artist", stats["artist"] ?: "N/A", Modifier.weight(1.5f))
+                        }
                     }
                 }
             }
@@ -124,8 +141,9 @@ fun HomeScreen(
             item {
                 Card(
                     modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = AccentColor.copy(alpha = 0.1f))
+                    shape = RoundedCornerShape(28.dp),
+                    colors = CardDefaults.cardColors(containerColor = AccentColor.copy(alpha = 0.1f)),
+                    border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.2f))
                 ) {
                     Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(modifier = Modifier.weight(1f)) {
