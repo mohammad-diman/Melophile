@@ -232,8 +232,14 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
 
     AnimatedVisibility(
         visible = viewModel.showFullPlayer,
-        enter = slideInVertically(initialOffsetY = { it }, animationSpec = spring(Spring.DampingRatioLowBouncy, Spring.StiffnessLow)),
-        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMedium))
+        enter = slideInVertically(
+            initialOffsetY = { it }, 
+            animationSpec = spring(Spring.DampingRatioLowBouncy, Spring.StiffnessLow)
+        ) + fadeIn(),
+        exit = slideOutVertically(
+            targetOffsetY = { it }, 
+            animationSpec = spring(Spring.DampingRatioNoBouncy, Spring.StiffnessLow)
+        ) + fadeOut(animationSpec = tween(400))
     ) {
         viewModel.currentSong?.let { song ->
             BackHandler { viewModel.showFullPlayer = false }
