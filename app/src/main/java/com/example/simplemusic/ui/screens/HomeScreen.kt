@@ -90,25 +90,26 @@ fun HomeScreen(
                 tint = SoftWhite
             )
 
+            IconButton(
+                onClick = { showAboutDialog = true },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 16.dp)
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(GlassColor.copy(alpha = 0.4f))
+            ) {
+                Icon(
+                    Icons.Rounded.Info, 
+                    contentDescription = "About", 
+                    tint = SoftWhite,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
-                        Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
-                    }
-                    IconButton(
-                        onClick = { showAboutDialog = true },
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(GlassColor.copy(alpha = 0.3f))
-                    ) {
-                        Icon(Icons.Rounded.Info, contentDescription = "About", tint = SoftWhite)
-                    }
-                }
+                Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
+                Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
             }
         }
 
