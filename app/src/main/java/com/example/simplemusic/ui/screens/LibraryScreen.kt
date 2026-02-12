@@ -25,15 +25,10 @@ import com.example.simplemusic.model.Song
 import com.example.simplemusic.model.SortOrder
 import com.example.simplemusic.ui.theme.*
 import com.example.simplemusic.ui.components.SongCard
-
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.DpOffset
-import com.example.simplemusic.model.Song
-import com.example.simplemusic.model.SortOrder
-import com.example.simplemusic.ui.theme.*
-import com.example.simplemusic.ui.components.SongCard
 
 @Composable
 fun LibraryScreen(
