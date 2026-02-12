@@ -63,6 +63,14 @@ fun AboutDialog(onDismiss: () -> Unit, accentColor: Color) {
                     textAlign = TextAlign.Center,
                     lineHeight = 18.sp
                 )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "Aplikasi ini dibuat karena developer suka mendengar musik setiap hari dan dia mau aplikasi yang terlihat premium dan no iklan tentu saja jika internet menyala.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MutedText,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 18.sp
+                )
             }
         },
         confirmButton = {
