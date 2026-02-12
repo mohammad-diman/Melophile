@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.simplemusic.R
 import com.example.simplemusic.ui.theme.GlassColor
 import com.example.simplemusic.ui.theme.MutedText
 import com.example.simplemusic.ui.theme.SoftWhite
@@ -33,7 +35,7 @@ fun AboutDialog(onDismiss: () -> Unit, accentColor: Color) {
         },
         title = {
             Text(
-                "About Melophile",
+                stringResource(R.string.about_melophile),
                 fontWeight = FontWeight.Bold,
                 color = SoftWhite
             )
@@ -44,20 +46,20 @@ fun AboutDialog(onDismiss: () -> Unit, accentColor: Color) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Version 1.0.0",
+                    "${stringResource(R.string.version)} 1.0.0",
                     style = MaterialTheme.typography.labelMedium,
                     color = MutedText
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "Melophile adalah pemutar musik modern yang dirancang untuk memberikan pengalaman mendengarkan yang elegan dan personal.",
+                    stringResource(R.string.about_desc_1),
                     style = MaterialTheme.typography.bodyMedium,
                     color = SoftWhite,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "Aplikasi ini dibuat sebagai proyek eksplorasi UI/UX menggunakan Jetpack Compose, berfokus pada estetika Glassmorphism dan kemudahan navigasi.",
+                    stringResource(R.string.about_desc_2),
                     style = MaterialTheme.typography.bodySmall,
                     color = MutedText,
                     textAlign = TextAlign.Center,
@@ -65,7 +67,7 @@ fun AboutDialog(onDismiss: () -> Unit, accentColor: Color) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "Aplikasi ini dibuat karena developer suka mendengar musik setiap hari dan dia mau aplikasi yang terlihat premium dan no iklan tentu saja jika internet menyala.",
+                    stringResource(R.string.about_desc_3),
                     style = MaterialTheme.typography.bodySmall,
                     color = MutedText,
                     textAlign = TextAlign.Center,
@@ -75,7 +77,7 @@ fun AboutDialog(onDismiss: () -> Unit, accentColor: Color) {
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = accentColor, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.close), color = accentColor, fontWeight = FontWeight.Bold)
             }
         }
     )

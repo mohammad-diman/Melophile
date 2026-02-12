@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +29,10 @@ import java.util.Calendar
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Audiotrack
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.rounded.Headset
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.MicExternalOn
+import androidx.compose.material.icons.rounded.MusicVideo
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.alpha
@@ -37,6 +41,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
+import com.example.simplemusic.R
 import com.example.simplemusic.ui.components.AboutDialog
 
 @Composable
@@ -116,7 +122,7 @@ fun HomeScreen(
 
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = MutedText)
-                Text("Dashboard", style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
+                Text(stringResource(R.string.dashboard), style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-1).sp))
             }
         }
 
@@ -138,8 +144,8 @@ fun HomeScreen(
                         border = BorderStroke(1.dp, GlassColor.copy(alpha = 0.1f))
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text("Daily Mix", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                            Text("Based on your taste", style = MaterialTheme.typography.bodySmall, color = MutedText)
+                            Text(stringResource(R.string.daily_mix), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.based_on_taste), style = MaterialTheme.typography.bodySmall, color = MutedText)
                             Spacer(modifier = Modifier.height(16.dp))
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -162,14 +168,14 @@ fun HomeScreen(
                     border = BorderStroke(1.dp, GlassColor.copy(alpha = 0.1f))
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("Listening Stats", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.listening_stats), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            StatCard("Total Plays", stats["total"] ?: "0", Modifier.weight(1f))
-                            StatCard("Top Artist", stats["artist"] ?: "N/A", Modifier.weight(1.5f))
+                            StatCard(stringResource(R.string.total_plays), stats["total"] ?: "0", Modifier.weight(1f))
+                            StatCard(stringResource(R.string.top_artist), stats["artist"] ?: "N/A", Modifier.weight(1.5f))
                         }
                         Spacer(modifier = Modifier.height(20.dp))
-                        Text("Weekly Activity", style = MaterialTheme.typography.labelSmall, color = MutedText)
+                        Text(stringResource(R.string.weekly_activity), style = MaterialTheme.typography.labelSmall, color = MutedText)
                         Spacer(modifier = Modifier.height(16.dp))
                         SimpleBarChart(
                             data = listOf(0.4f, 0.7f, 0.5f, 0.9f, 0.6f, 0.3f, 0.8f), // Mock data
@@ -188,8 +194,8 @@ fun HomeScreen(
                 ) {
                     Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Discovery", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("Explore your full collection in the Library.", style = MaterialTheme.typography.bodySmall, color = MutedText)
+                            Text(stringResource(R.string.discovery), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.explore_collection), style = MaterialTheme.typography.bodySmall, color = MutedText)
                         }
                     }
                 }

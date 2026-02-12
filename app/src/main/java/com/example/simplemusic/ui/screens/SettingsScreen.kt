@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -24,10 +25,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.simplemusic.R
 import com.example.simplemusic.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +64,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings", fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp) },
+                title = { Text(stringResource(R.string.settings), fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
@@ -77,7 +80,7 @@ fun SettingsScreen(
         containerColor = DarkBackground
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            // Decorative background cluster (consistent with other screens)
+            // ... (deco icons)
             val decoIcons = listOf(
                 Icons.Rounded.Settings to (120.dp to DpOffset(20.dp, (-20).dp)),
                 Icons.Rounded.Folder to (80.dp to DpOffset(100.dp, 40.dp))
@@ -105,7 +108,7 @@ fun SettingsScreen(
                     .padding(24.dp)
             ) {
                 Text(
-                    "Library Management",
+                    stringResource(R.string.library_mgmt),
                     style = MaterialTheme.typography.labelLarge,
                     color = accentColor,
                     fontWeight = FontWeight.Bold,
@@ -139,7 +142,7 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         
                         Column {
-                            Text("Music Directory", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.music_dir), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                             Text(selectedPath, style = MaterialTheme.typography.bodySmall, color = MutedText, maxLines = 1)
                         }
                     }
@@ -173,7 +176,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(16.dp))
                             
                             Column {
-                                Text("App Language", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.app_language), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                                 Text(currentLanguageLabel, style = MaterialTheme.typography.bodySmall, color = MutedText)
                             }
                         }
@@ -226,8 +229,8 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         
                         Column {
-                            Text("Scan & Refresh", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                            Text("Manually search for new songs in directory", style = MaterialTheme.typography.bodySmall, color = MutedText)
+                            Text(stringResource(R.string.scan_refresh), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.scan_desc), style = MaterialTheme.typography.bodySmall, color = MutedText)
                         }
                     }
                 }

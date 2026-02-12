@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Melophile</string>
+    <string name="dashboard">Dasbor</string>
+    <string name="library">Pustaka</string>
+    <string name="songs">lagu</string>
+    <string name="settings">Pengaturan</string>
+    <string name="daily_mix">Mix Harian</string>
+    <string name="based_on_taste">Berdasarkan seleramu</string>
+    <string name="listening_stats">Statistik Mendengarkan</string>
+    <string name="total_plays">Total Putar</string>
+    <string name="top_artist">Artis Teratas</string>
+    <string name="weekly_activity">Aktivitas Mingguan</string>
+    <string name="discovery">Penjelajahan</string>
+    <string name="explore_collection">Jelajahi seluruh koleksimu di Pustaka.</string>
+    <string name="about_melophile">Tentang Melophile</string>
+    <string name="version">Versi</string>
+    <string name="about_desc_1">Melophile adalah pemutar musik modern yang dirancang untuk memberikan pengalaman mendengarkan yang elegan dan personal.</string>
+    <string name="about_desc_2">Aplikasi ini dibuat sebagai proyek eksplorasi UI/UX menggunakan Jetpack Compose, berfokus pada estetika Glassmorphism dan kemudahan navigasi.</string>
+    <string name="about_desc_3">Aplikasi ini dibuat karena developer suka mendengar musik setiap hari dan dia mau aplikasi yang terlihat premium dan no iklan tentu saja jika internet menyala.</string>
+    <string name="close">Tutup</string>
+    <string name="library_mgmt">Manajemen Pustaka</string>
+    <string name="music_dir">Direktori Musik</string>
+    <string name="scan_refresh">Pindai &amp; Segarkan</string>
+    <string name="scan_desc">Cari lagu baru di direktori secara manual</string>
+    <string name="app_language">Bahasa Aplikasi</string>
+    <string name="search_hint">Cari lagu atau artis...</string>
+</resources>

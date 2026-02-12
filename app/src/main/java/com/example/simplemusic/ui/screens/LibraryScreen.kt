@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.sp
 import com.example.simplemusic.model.Song
 import com.example.simplemusic.model.SortOrder
 import com.example.simplemusic.ui.theme.*
+import androidx.compose.ui.res.stringResource
+import com.example.simplemusic.R
 import com.example.simplemusic.ui.components.SongCard
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.draw.alpha
@@ -79,13 +81,14 @@ fun LibraryScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text("Your Library", style = MaterialTheme.typography.titleMedium, color = MutedText)
-                        Text("${songs.size} songs", style = MaterialTheme.typography.labelSmall, color = accentColor)
-                    }
-                    Row {
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(stringResource(R.string.library), style = MaterialTheme.typography.titleMedium, color = MutedText)
+                                        Text("${songs.size} ${stringResource(R.string.songs)}", style = MaterialTheme.typography.labelSmall, color = accentColor)
+                                    }
+                                    Row {
+                    
                         Box {
                             var showSortMenu by remember { mutableStateOf(false) }
                             IconButton(onClick = { showSortMenu = true }) {
@@ -140,7 +143,7 @@ fun LibraryScreen(
                             Box(modifier = Modifier.weight(1f)) {
                                 if (searchQuery.isEmpty()) {
                                     Text(
-                                        "Search for songs or artists...", 
+                                        stringResource(R.string.search_hint), 
                                         color = MutedText.copy(alpha = 0.7f), 
                                         style = MaterialTheme.typography.bodyLarge
                                     )

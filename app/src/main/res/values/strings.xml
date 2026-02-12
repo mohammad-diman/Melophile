@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">Melophile</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="library">Library</string>
+    <string name="songs">songs</string>
+    <string name="settings">Settings</string>
+    <string name="daily_mix">Daily Mix</string>
+    <string name="based_on_taste">Based on your taste</string>
+    <string name="listening_stats">Listening Stats</string>
+    <string name="total_plays">Total Plays</string>
+    <string name="top_artist">Top Artist</string>
+    <string name="weekly_activity">Weekly Activity</string>
+    <string name="discovery">Discovery</string>
+    <string name="explore_collection">Explore your full collection in the Library.</string>
+    <string name="about_melophile">About Melophile</string>
+    <string name="version">Version</string>
+    <string name="about_desc_1">Melophile is a modern music player designed to provide an elegant and personal listening experience.</string>
+    <string name="about_desc_2">This app was built as a UI/UX exploration project using Jetpack Compose, focusing on Glassmorphism aesthetics and ease of navigation.</string>
+    <string name="about_desc_3">This app was created because the developer loves listening to music every day and wanted a premium-looking app with no ads, even when the internet is on.</string>
+    <string name="close">Close</string>
+    <string name="library_mgmt">Library Management</string>
+    <string name="music_dir">Music Directory</string>
+    <string name="scan_refresh">Scan &amp; Refresh</string>
+    <string name="scan_desc">Manually search for new songs in directory</string>
+    <string name="app_language">App Language</string>
+    <string name="search_hint">Search for songs or artists...</string>
 </resources>
