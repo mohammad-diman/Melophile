@@ -2,6 +2,7 @@ package com.example.simplemusic.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -95,14 +96,38 @@ fun MiniPlayerGlass(
     isPlaying: Boolean, 
     accentColor: Color,
     onTogglePlay: () -> Unit, 
+    onDismiss: () -> Unit,
     onClick: () -> Unit
 ) {
+    val offsetX = remember { Animatable(0f) }
+    
     Card(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth()
             .height(76.dp)
+            .offset { androidx.compose.ui.unit.IntOffset(offsetX.value.toInt(), 0) }
             .shadow(20.dp, RoundedCornerShape(24.dp))
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        if (kotlin.math.abs(offsetX.value) > size.width / 3) {
+                            val target = if (offsetX.value > 0) size.width.toFloat() else -size.width.toFloat()
+                            launch {
+                                offsetX.animateTo(target, tween(300))
+                                onDismiss()
+                                offsetX.snapTo(0f) // Reset for next time
+                            }
+                        } else {
+                            launch { offsetX.animateTo(0f, spring()) }
+                        }
+                    },
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        launch { offsetX.snapTo(offsetX.value + dragAmount) }
+                    }
+                )
+            }
             .clickable(onClick = onClick, interactionSource = remember { MutableInteractionSource() }, indication = null),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = GlassColor.copy(0.95f))

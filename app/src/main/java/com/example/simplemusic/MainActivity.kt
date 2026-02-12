@@ -139,6 +139,10 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                             isPlaying = viewModel.isPlaying,
                             accentColor = viewModel.dynamicAccentColor,
                             onTogglePlay = { viewModel.togglePlay() },
+                            onDismiss = { 
+                                viewModel.player?.pause()
+                                viewModel.currentSong = null 
+                            },
                             onClick = { viewModel.showFullPlayer = true }
                         )
                     }
