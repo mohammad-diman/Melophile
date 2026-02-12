@@ -30,6 +30,8 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.simplemusic.ui.components.AboutDialog
 
@@ -94,16 +96,22 @@ fun HomeScreen(
                 onClick = { showAboutDialog = true },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(end = 16.dp)
-                    .size(56.dp)
+                    .padding(top = 8.dp, end = 20.dp)
+                    .size(52.dp)
+                    .shadow(12.dp, CircleShape)
                     .clip(CircleShape)
-                    .background(GlassColor.copy(alpha = 0.4f))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(SoftWhite.copy(alpha = 0.15f), GlassColor.copy(alpha = 0.6f))
+                        )
+                    )
+                    .border(BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f)), CircleShape)
             ) {
                 Icon(
-                    Icons.Rounded.Info, 
-                    contentDescription = "About", 
-                    tint = SoftWhite,
-                    modifier = Modifier.size(32.dp)
+                    imageVector = Icons.Rounded.Info,
+                    contentDescription = "About",
+                    tint = SoftWhite.copy(alpha = 0.9f),
+                    modifier = Modifier.size(28.dp)
                 )
             }
 
