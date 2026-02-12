@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,12 +37,18 @@ fun SettingsScreen(
     accentColor: Color,
     onBack: () -> Unit,
     onDirectorySelected: (Uri) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    currentLanguage: String,
+    onLanguageSelected: (String) -> Unit
 ) {
     var selectedPath by remember { 
         mutableStateOf(currentUri?.path?.split(":")?.last() ?: "All Device Music (Default)") 
     }
     
+    var showLanguageMenu by remember { mutableStateOf(false) }
+    val languages = listOf("system" to "System Default", "en" to "English", "id" to "Indonesian")
+    val currentLanguageLabel = languages.find { it.first == currentLanguage }?.second ?: "System Default"
+
     val directoryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
@@ -138,6 +145,60 @@ fun SettingsScreen(
                     }
                 }
                 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Language Selection Card
+                Box {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = GlassColor.copy(alpha = 0.4f)),
+                        border = BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f)),
+                        onClick = { showLanguageMenu = true }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color.White.copy(0.05f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Rounded.Translate, contentDescription = null, tint = SoftWhite, modifier = Modifier.size(26.dp))
+                            }
+                            
+                            Spacer(modifier = Modifier.width(16.dp))
+                            
+                            Column {
+                                Text("App Language", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                Text(currentLanguageLabel, style = MaterialTheme.typography.bodySmall, color = MutedText)
+                            }
+                        }
+                    }
+
+                    DropdownMenu(
+                        expanded = showLanguageMenu,
+                        onDismissRequest = { showLanguageMenu = false },
+                        modifier = Modifier
+                            .width(200.dp)
+                            .background(GlassColor.copy(alpha = 0.95f))
+                            .border(BorderStroke(1.dp, SoftWhite.copy(alpha = 0.1f)), RoundedCornerShape(16.dp))
+                    ) {
+                        languages.forEach { (code, label) ->
+                            DropdownMenuItem(
+                                text = { Text(label, color = SoftWhite) },
+                                onClick = {
+                                    onLanguageSelected(code)
+                                    showLanguageMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Refresh Library Card

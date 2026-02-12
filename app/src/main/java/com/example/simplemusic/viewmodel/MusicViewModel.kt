@@ -59,6 +59,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     var sleepTimerMinutes by mutableIntStateOf(0)
     var isSleepTimerActive by mutableStateOf(false)
     var songToEdit by mutableStateOf<Song?>(null)
+    var currentLanguage by mutableStateOf(settingsManager.getLanguage())
 
     val dailyMix by derivedStateOf {
         rawSongs.sortedByDescending { settingsManager.getPlayCount(it.id) }.take(6)
@@ -241,6 +242,10 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         currentSortOrder = order
         settingsManager.saveSortOrder(order)
         updatePlayerPlaylist()
+    }
+    fun updateLanguage(lang: String) {
+        currentLanguage = lang
+        settingsManager.saveLanguage(lang)
     }
     fun setSleepTimer(minutes: Int) {
         sleepTimer?.cancel()

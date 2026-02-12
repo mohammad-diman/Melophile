@@ -81,6 +81,14 @@ class SettingsManager(private val context: Context) {
         return prefs.getString("last_route", null)
     }
 
+    fun saveLanguage(languageCode: String) {
+        prefs.edit().putString("app_language", languageCode).apply()
+    }
+
+    fun getLanguage(): String {
+        return prefs.getString("app_language", "system") ?: "system"
+    }
+
     fun saveSongOverride(songId: Long, title: String, artist: String) {
         prefs.edit().putString("override_title_$songId", title).apply()
         prefs.edit().putString("override_artist_$songId", artist).apply()

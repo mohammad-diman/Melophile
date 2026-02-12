@@ -1,6 +1,7 @@
 package com.example.simplemusic
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -52,6 +53,12 @@ import com.example.simplemusic.navigation.NavScreen
 import com.example.simplemusic.viewmodel.MusicViewModel
 
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        val settingsManager = SettingsManager(newBase)
+        val lang = settingsManager.getLanguage()
+        super.attachBaseContext(LocaleHelper.applyLocale(newBase, lang))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -153,7 +160,12 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                             accentColor = viewModel.dynamicAccentColor,
                             onBack = { navController.popBackStack() },
                             onDirectorySelected = { viewModel.updateFolder(it) },
-                            onRefresh = { viewModel.loadSongs(context) }
+                            onRefresh = { viewModel.loadSongs(context) },
+                            currentLanguage = viewModel.currentLanguage,
+                            onLanguageSelected = { 
+                                viewModel.updateLanguage(it)
+                                (context as? MainActivity)?.recreate()
+                            }
                         )
                     }
                 }
