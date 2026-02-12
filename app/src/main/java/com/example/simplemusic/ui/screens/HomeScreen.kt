@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.simplemusic.ui.components.AboutDialog
 
@@ -171,10 +172,10 @@ fun HomeScreen(
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                         Text("Weekly Activity", style = MaterialTheme.typography.labelSmall, color = MutedText)
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         SimpleBarChart(
                             data = listOf(0.4f, 0.7f, 0.5f, 0.9f, 0.6f, 0.3f, 0.8f), // Mock data
-                            modifier = Modifier.fillMaxWidth().height(80.dp)
+                            modifier = Modifier.fillMaxWidth().height(120.dp)
                         )
                     }
                 }
@@ -234,13 +235,33 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
 @Composable
 fun SimpleBarChart(data: List<Float>, modifier: Modifier = Modifier) {
     val days = listOf("M", "T", "W", "T", "F", "S", "S")
+    var selectedBar by remember { mutableStateOf(-1) }
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         data.forEachIndexed { index, value ->
+            val isSelected = selectedBar == index
+            val scale by animateFloatAsState(
+                targetValue = if (isSelected) 1.1f else 1f,
+                animationSpec = spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessLow),
+                label = "barScale"
+            )
+
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .graphicsLayer(scaleX = scale, scaleY = scale)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                selectedBar = index
+                                tryAwaitRelease()
+                                selectedBar = -1
+                            }
+                        )
+                    },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Bar container
@@ -249,16 +270,16 @@ fun SimpleBarChart(data: List<Float>, modifier: Modifier = Modifier) {
                         .weight(1f)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(SoftWhite.copy(alpha = 0.05f))
+                        .background(if (isSelected) AccentColor.copy(alpha = 0.1f) else SoftWhite.copy(alpha = 0.05f))
                 ) {
                     // Actual progress bar
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight(value.coerceIn(0.05f, 1f)) // Ensure at least a small visible bar
+                            .fillMaxHeight(value.coerceIn(0.05f, 1f))
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(AccentColor)
+                            .background(if (isSelected) AccentColor else AccentColor.copy(alpha = 0.7f))
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -266,8 +287,8 @@ fun SimpleBarChart(data: List<Float>, modifier: Modifier = Modifier) {
                 Text(
                     text = days.getOrElse(index) { "" },
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                    color = if (value > 0.7f) AccentColor else MutedText,
-                    fontWeight = if (value > 0.7f) FontWeight.Bold else FontWeight.Normal
+                    color = if (isSelected || value > 0.8f) AccentColor else MutedText,
+                    fontWeight = if (isSelected || value > 0.8f) FontWeight.Bold else FontWeight.Normal
                 )
             }
         }
