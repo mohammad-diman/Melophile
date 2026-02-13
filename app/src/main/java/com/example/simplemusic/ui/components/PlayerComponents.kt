@@ -57,7 +57,11 @@ fun SongCard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current).data(song.albumArtUri).crossfade(true).build(),
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(song.albumArtUri)
+                .crossfade(true)
+                .size(160, 160) // Optimized for list thumbnails
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.size(56.dp).clip(RoundedCornerShape(14.dp))
@@ -125,7 +129,7 @@ fun MiniPlayerGlass(
     
     Card(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 2.dp)
             .fillMaxWidth()
             .height(76.dp)
             .offset { androidx.compose.ui.unit.IntOffset(offsetX.value.toInt(), 0) }
@@ -138,7 +142,7 @@ fun MiniPlayerGlass(
                             scope.launch {
                                 offsetX.animateTo(target, tween(300))
                                 onDismiss()
-                                offsetX.snapTo(0f) // Reset for next time
+                                offsetX.snapTo(0f)
                             }
                         } else {
                             scope.launch { offsetX.animateTo(0f, spring()) }
@@ -150,9 +154,13 @@ fun MiniPlayerGlass(
                     }
                 )
             }
-            .clickable(onClick = onClick, interactionSource = remember { MutableInteractionSource() }, indication = null),
+            .clickable(
+                onClick = onClick, 
+                interactionSource = remember { MutableInteractionSource() }, 
+                indication = null
+            ),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = GlassColor.copy(0.95f))
+        colors = CardDefaults.cardColors(containerColor = GlassColor.copy(alpha = 0.95f))
     ) {
         Row(
             modifier = Modifier.fillMaxSize().padding(8.dp),
@@ -165,11 +173,27 @@ fun MiniPlayerGlass(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(song.title, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), maxLines = 1, modifier = Modifier.basicMarquee())
-                Text(song.artist, style = MaterialTheme.typography.bodySmall, color = MutedText)
+                Text(
+                    song.title, 
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), 
+                    maxLines = 1, 
+                    modifier = Modifier.basicMarquee()
+                )
+                Text(
+                    song.artist, 
+                    style = MaterialTheme.typography.bodySmall, 
+                    color = MutedText
+                )
             }
-            IconButton(onClick = onTogglePlay, modifier = Modifier.size(48.dp).background(accentColor, CircleShape)) {
-                Icon(if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, contentDescription = null, tint = Color.White)
+            IconButton(
+                onClick = onTogglePlay, 
+                modifier = Modifier.size(48.dp).background(accentColor, CircleShape)
+            ) {
+                Icon(
+                    if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, 
+                    contentDescription = null, 
+                    tint = Color.White
+                )
             }
         }
     }

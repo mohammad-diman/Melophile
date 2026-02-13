@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -49,6 +50,7 @@ import com.example.simplemusic.ui.components.AboutDialog
 fun HomeScreen(
     dailyMix: List<Song>,
     stats: Map<String, String>,
+    weeklyActivity: List<Float> = listOf(0f, 0f, 0f, 0f, 0f, 0f, 0f),
     accentColor: androidx.compose.ui.graphics.Color = AccentColor,
     onSongClick: (Song) -> Unit
 ) {
@@ -132,7 +134,7 @@ fun HomeScreen(
 
         LazyColumn(
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(bottom = 120.dp),
+            contentPadding = PaddingValues(bottom = 180.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             if (dailyMix.isNotEmpty()) {
@@ -177,8 +179,9 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                         Text(stringResource(R.string.weekly_activity), style = MaterialTheme.typography.labelSmall, color = MutedText)
                         Spacer(modifier = Modifier.height(16.dp))
-                        SimpleBarChart(
-                            data = listOf(0.4f, 0.7f, 0.5f, 0.9f, 0.6f, 0.3f, 0.8f), // Mock data
+                        ModernAreaChart(
+                            data = weeklyActivity,
+                            accentColor = accentColor,
                             modifier = Modifier.fillMaxWidth().height(120.dp)
                         )
                     }
@@ -237,64 +240,75 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SimpleBarChart(data: List<Float>, modifier: Modifier = Modifier) {
-    val days = listOf("M", "T", "W", "T", "F", "S", "S")
-    var selectedBar by remember { mutableStateOf(-1) }
+fun ModernAreaChart(data: List<Float>, accentColor: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {
+    val transitionProgress by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(1500, easing = FastOutSlowInEasing),
+        label = "chartAnimation"
+    )
 
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        data.forEachIndexed { index, value ->
-            val isSelected = selectedBar == index
-            val scale by animateFloatAsState(
-                targetValue = if (isSelected) 1.1f else 1f,
-                animationSpec = spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessLow),
-                label = "barScale"
+    Canvas(modifier = modifier) {
+        if (data.isEmpty()) return@Canvas
+        
+        val width = size.width
+        val height = size.height
+        val spacing = width / (data.size - 1).coerceAtLeast(1)
+        
+        val points = data.mapIndexed { index, value ->
+            androidx.compose.ui.geometry.Offset(
+                x = index * spacing,
+                y = height - (value * height * transitionProgress)
             )
+        }
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .graphicsLayer(scaleX = scale, scaleY = scale)
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                selectedBar = index
-                                tryAwaitRelease()
-                                selectedBar = -1
-                            }
-                        )
-                    },
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Bar container
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (isSelected) AccentColor.copy(alpha = 0.1f) else SoftWhite.copy(alpha = 0.05f))
-                ) {
-                    // Actual progress bar
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight(value.coerceIn(0.05f, 1f))
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSelected) AccentColor else AccentColor.copy(alpha = 0.7f))
+        val path = androidx.compose.ui.graphics.Path().apply {
+            if (points.isNotEmpty()) {
+                moveTo(points.first().x, points.first().y)
+                for (i in 1 until points.size) {
+                    val p0 = points[i - 1]
+                    val p1 = points[i]
+                    cubicTo(
+                        (p0.x + p1.x) / 2, p0.y,
+                        (p0.x + p1.x) / 2, p1.y,
+                        p1.x, p1.y
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                // Day Label
-                Text(
-                    text = days.getOrElse(index) { "" },
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                    color = if (isSelected || value > 0.8f) AccentColor else MutedText,
-                    fontWeight = if (isSelected || value > 0.8f) FontWeight.Bold else FontWeight.Normal
-                )
             }
+        }
+
+        // Draw Fill Gradient
+        val fillPath = androidx.compose.ui.graphics.Path().apply {
+            addPath(path)
+            lineTo(width, height)
+            lineTo(0f, height)
+            close()
+        }
+        drawPath(
+            path = fillPath,
+            brush = Brush.verticalGradient(
+                colors = listOf(accentColor.copy(alpha = 0.3f), Color.Transparent)
+            )
+        )
+
+        // Draw Line
+        drawPath(
+            path = path,
+            color = accentColor,
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx(), cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        )
+        
+        // Draw Dots
+        points.forEach { point ->
+            drawCircle(
+                color = accentColor,
+                radius = 4.dp.toPx(),
+                center = point
+            )
+            drawCircle(
+                color = DarkBackground,
+                radius = 2.dp.toPx(),
+                center = point
+            )
         }
     }
 }

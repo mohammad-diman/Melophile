@@ -16,7 +16,7 @@
     <string name="version">Versi</string>
     <string name="about_desc_1">Melophile adalah pemutar musik modern yang dirancang untuk memberikan pengalaman mendengarkan yang elegan dan personal.</string>
     <string name="about_desc_2">Aplikasi ini dibuat sebagai proyek eksplorasi UI/UX menggunakan Jetpack Compose, berfokus pada estetika Glassmorphism dan kemudahan navigasi.</string>
-    <string name="about_desc_3">Aplikasi ini dibuat karena developer suka mendengar musik setiap hari dan dia mau aplikasi yang terlihat premium dan no iklan tentu saja jika internet menyala.</string>
+    <string name="about_desc_3">Aplikasi ini dibuat karena developer suka mendengar musik setiap hari dan dia mau aplikasi yang terlihat premium dan tanpa iklan.</string>
     <string name="close">Tutup</string>
     <string name="library_mgmt">Manajemen Pustaka</string>
     <string name="music_dir">Direktori Musik</string>

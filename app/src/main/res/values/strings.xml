@@ -16,7 +16,7 @@
     <string name="version">Version</string>
     <string name="about_desc_1">Melophile is a modern music player designed to provide an elegant and personal listening experience.</string>
     <string name="about_desc_2">This app was built as a UI/UX exploration project using Jetpack Compose, focusing on Glassmorphism aesthetics and ease of navigation.</string>
-    <string name="about_desc_3">This app was created because the developer loves listening to music every day and wanted a premium-looking app with no ads, even when the internet is on.</string>
+    <string name="about_desc_3">This app was created because the developer loves listening to music every day and wanted a premium-looking app with no ads.</string>
     <string name="close">Close</string>
     <string name="library_mgmt">Library Management</string>
     <string name="music_dir">Music Directory</string>

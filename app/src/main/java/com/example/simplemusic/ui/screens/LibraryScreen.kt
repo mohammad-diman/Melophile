@@ -166,10 +166,10 @@ fun LibraryScreen(
 
         LazyColumn(
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(bottom = 120.dp),
+            contentPadding = PaddingValues(bottom = 180.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(songs) { song ->
+            items(songs, key = { it.id }) { song ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                     SongCard(
                         song = song, 

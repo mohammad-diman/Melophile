@@ -20,9 +20,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -51,11 +55,12 @@ import com.example.simplemusic.ui.screens.*
 import com.example.simplemusic.ui.components.*
 import com.example.simplemusic.navigation.NavScreen
 import com.example.simplemusic.viewmodel.MusicViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
         val settingsManager = SettingsManager(newBase)
-        val lang = settingsManager.getLanguage()
+        val lang = settingsManager.getLanguageSync()
         val context = if (lang != "system") {
             LocaleHelper.applyLocale(newBase, lang)
         } else {
@@ -92,6 +97,26 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
     val context = LocalContext.current
     val navController = rememberNavController()
 
+    // Manage Permissions
+    val audioPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) 
+        Manifest.permission.READ_MEDIA_AUDIO 
+    else 
+        Manifest.permission.READ_EXTERNAL_STORAGE
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) viewModel.loadSongs(context)
+    }
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, audioPermission) == PackageManager.PERMISSION_GRANTED) {
+            viewModel.loadSongs(context)
+        } else {
+            permissionLauncher.launch(audioPermission)
+        }
+    }
+
     // Restore last route
     LaunchedEffect(Unit) {
         val lastRoute = viewModel.settingsManager.getLastRoute()
@@ -107,24 +132,15 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
     // Save route changes
     DisposableEffect(navController) {
         val listener = androidx.navigation.NavController.OnDestinationChangedListener { _, destination, _ ->
-            destination.route?.let { viewModel.settingsManager.saveLastRoute(it) }
+            destination.route?.let { 
+                viewModel.viewModelScope.launch {
+                    viewModel.settingsManager.saveLastRoute(it)
+                }
+            }
         }
         navController.addOnDestinationChangedListener(listener)
         onDispose {
             navController.removeOnDestinationChangedListener(listener)
-        }
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) viewModel.loadSongs(context)
-    }
-
-    LaunchedEffect(viewModel.selectedFolderUri) {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
-        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            viewModel.loadSongs(context)
-        } else {
-            permissionLauncher.launch(permission)
         }
     }
 
@@ -142,6 +158,7 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                         HomeScreen(
                             dailyMix = viewModel.dailyMix,
                             stats = viewModel.stats,
+                            weeklyActivity = viewModel.weeklyActivity,
                             accentColor = viewModel.dynamicAccentColor,
                             onSongClick = { viewModel.playSong(it) }
                         )
@@ -172,7 +189,8 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                                 with(LocaleHelper) {
                                     context.findActivity()?.recreate()
                                 }
-                            }
+                            },
+                            onResetStats = { viewModel.resetStats() }
                         )
                     }
                 }
@@ -221,7 +239,10 @@ fun MusicAppRoot(viewModel: MusicViewModel) {
                 }
             },
             text = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ) {
                     // Preview Album Art
                     AsyncImage(
                         model = song.albumArtUri,

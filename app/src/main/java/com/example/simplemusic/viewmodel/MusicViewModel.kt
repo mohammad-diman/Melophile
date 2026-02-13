@@ -28,6 +28,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -42,14 +44,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     // States
     var rawSongs by mutableStateOf(listOf<Song>())
-    var currentSortOrder by mutableStateOf(settingsManager.getSortOrder())
-    var selectedFolderUri by mutableStateOf(settingsManager.getMusicDirectory())
+    var currentSortOrder by mutableStateOf(SortOrder.TITLE)
+    var selectedFolderUri by mutableStateOf<android.net.Uri?>(null)
     var searchQuery by mutableStateOf("")
     
     var currentSong by mutableStateOf<Song?>(null)
     var isPlaying by mutableStateOf(false)
-    var repeatMode by mutableStateOf(settingsManager.getRepeatMode())
-    var isShuffleEnabled by mutableStateOf(settingsManager.getShuffleMode())
+    var repeatMode by mutableStateOf(2)
+    var isShuffleEnabled by mutableStateOf(false)
     var showFullPlayer by mutableStateOf(false)
     var currentPosition by mutableLongStateOf(0L)
     var duration by mutableLongStateOf(0L)
@@ -59,16 +61,20 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     var sleepTimerMinutes by mutableIntStateOf(0)
     var isSleepTimerActive by mutableStateOf(false)
     var songToEdit by mutableStateOf<Song?>(null)
-    var currentLanguage by mutableStateOf(settingsManager.getLanguage())
+    var currentLanguage by mutableStateOf("system")
+    
+    // Play counts cache for derived states
+    private var playCounts by mutableStateOf(mapOf<Long, Int>())
+    var weeklyActivity by mutableStateOf(listOf(0f, 0f, 0f, 0f, 0f, 0f, 0f))
 
     val dailyMix by derivedStateOf {
-        rawSongs.sortedByDescending { settingsManager.getPlayCount(it.id) }.take(6)
+        rawSongs.sortedByDescending { playCounts[it.id] ?: 0 }.take(6)
     }
 
     val stats by derivedStateOf {
-        val totalPlays = rawSongs.sumOf { settingsManager.getPlayCount(it.id) }
+        val totalPlays = playCounts.values.sum()
         val topArtist = rawSongs.groupBy { it.artist }
-            .maxByOrNull { group -> group.value.sumOf { settingsManager.getPlayCount(it.id) } }?.key ?: "N/A"
+            .maxByOrNull { group -> group.value.sumOf { playCounts[it.id] ?: 0 } }?.key ?: "N/A"
         mapOf("total" to totalPlays.toString(), "artist" to topArtist)
     }
 
@@ -84,8 +90,56 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     init {
+        observeSettings()
         initializeController()
         startPositionUpdateLoop()
+    }
+
+    private fun observeSettings() {
+        viewModelScope.launch {
+            settingsManager.sortOrder
+                .distinctUntilChanged()
+                .collect { currentSortOrder = it }
+        }
+        viewModelScope.launch {
+            settingsManager.musicDirectory
+                .distinctUntilChanged()
+                .collect { uri ->
+                    if (uri != selectedFolderUri) {
+                        selectedFolderUri = uri
+                        loadSongs(getApplication())
+                    }
+                }
+        }
+        viewModelScope.launch {
+            settingsManager.repeatMode
+                .distinctUntilChanged()
+                .collect { repeatMode = it; player?.repeatMode = it }
+        }
+        viewModelScope.launch {
+            settingsManager.shuffleMode
+                .distinctUntilChanged()
+                .collect { isShuffleEnabled = it; player?.shuffleModeEnabled = it }
+        }
+        viewModelScope.launch {
+            settingsManager.appLanguage
+                .distinctUntilChanged()
+                .collect { currentLanguage = it }
+        }
+        viewModelScope.launch {
+            settingsManager.getWeeklyActivity().collect { weeklyActivity = it }
+        }
+    }
+
+    fun resetStats() {
+        viewModelScope.launch {
+            settingsManager.resetStats()
+            // Reset local playCounts map to 0s for all known songs to immediately update UI
+            val resetMap = mutableMapOf<Long, Int>()
+            rawSongs.forEach { resetMap[it.id] = 0 }
+            playCounts = resetMap
+            // weeklyActivity will be updated by collector automatically
+        }
     }
 
     private fun initializeController() {
@@ -95,7 +149,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             player = controllerFuture?.get()
             isControllerReady = true
             setupPlayerListener()
-            // Setelah controller siap, muat lagu jika data sudah ada
             if (rawSongs.isNotEmpty()) {
                 updatePlayerPlaylist()
             }
@@ -114,18 +167,15 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                 val index = player?.currentMediaItemIndex ?: -1
                 if (index in songs.indices) {
                     currentSong = songs[index]
-                    settingsManager.incrementPlayCount(currentSong!!.id)
-                    settingsManager.saveLastPlayedSongId(currentSong!!.id)
+                    viewModelScope.launch {
+                        settingsManager.incrementPlayCount(currentSong!!.id)
+                        settingsManager.saveLastPlayedSongId(currentSong!!.id)
+                        // Update local count for UI
+                        val currentCount = playCounts[currentSong!!.id] ?: 0
+                        playCounts = playCounts + (currentSong!!.id to currentCount + 1)
+                    }
                     updateDynamicColor(currentSong!!)
                 }
-            }
-            override fun onRepeatModeChanged(mode: Int) { 
-                repeatMode = mode 
-                settingsManager.saveRepeatMode(mode)
-            }
-            override fun onShuffleModeEnabledChanged(enabled: Boolean) { 
-                isShuffleEnabled = enabled 
-                settingsManager.saveShuffleMode(enabled)
             }
         })
     }
@@ -166,41 +216,52 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadSongs(context: Context) {
-        val fetched = fetchSongs(context, selectedFolderUri)
-        rawSongs = fetched.map { song ->
-            val override = settingsManager.getSongOverride(song.id)
-            song.copy(
-                title = override.first ?: song.title,
-                artist = override.second ?: song.artist
-            )
-        }
-        
-        // Restore last played song if nothing is currently playing
-        if (currentSong == null) {
-            val lastId = settingsManager.getLastPlayedSongId()
-            if (lastId != -1L) {
-                val lastSong = rawSongs.find { it.id == lastId }
-                if (lastSong != null) {
-                    currentSong = lastSong
-                    updateDynamicColor(lastSong)
+        viewModelScope.launch {
+            val fetched = fetchSongs(context, selectedFolderUri)
+            
+            // Fetch play counts for all fetched songs
+            val counts = mutableMapOf<Long, Int>()
+            fetched.forEach { song ->
+                counts[song.id] = settingsManager.getPlayCount(song.id).first()
+            }
+            playCounts = counts
+
+            rawSongs = fetched.map { song ->
+                val override = settingsManager.getSongOverride(song.id)
+                song.copy(
+                    title = override.first ?: song.title,
+                    artist = override.second ?: song.artist
+                )
+            }
+            
+            if (currentSong == null) {
+                val lastId = settingsManager.getLastPlayedSongId()
+                if (lastId != -1L) {
+                    val lastSong = rawSongs.find { it.id == lastId }
+                    if (lastSong != null) {
+                        currentSong = lastSong
+                        updateDynamicColor(lastSong)
+                    }
                 }
             }
-        }
 
-        if (isControllerReady) {
-            updatePlayerPlaylist()
+            if (isControllerReady) {
+                updatePlayerPlaylist()
+            }
         }
     }
 
     private fun updatePlayerPlaylist() {
-        val mediaItems = songs.map { MediaItem.fromUri(it.uri) }
-        
-        val lastId = settingsManager.getLastPlayedSongId()
-        val index = if (lastId != -1L) songs.indexOfFirst { it.id == lastId }.coerceAtLeast(0) else 0
-        val position = settingsManager.getLastPosition()
+        viewModelScope.launch {
+            val mediaItems = songs.map { MediaItem.fromUri(it.uri) }
+            
+            val lastId = settingsManager.getLastPlayedSongId()
+            val index = if (lastId != -1L) songs.indexOfFirst { it.id == lastId }.coerceAtLeast(0) else 0
+            val position = settingsManager.getLastPosition()
 
-        player?.setMediaItems(mediaItems, index, position)
-        player?.prepare()
+            player?.setMediaItems(mediaItems, index, position)
+            player?.prepare()
+        }
     }
 
     fun playSong(song: Song) {
@@ -211,7 +272,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             currentSong = song
             player?.seekTo(index, 0L)
             player?.play()
-            settingsManager.incrementPlayCount(song.id)
+            viewModelScope.launch {
+                settingsManager.incrementPlayCount(song.id)
+                val currentCount = playCounts[song.id] ?: 0
+                playCounts = playCounts + (song.id to currentCount + 1)
+            }
             updateDynamicColor(song)
         }
     }
@@ -220,32 +285,45 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun next() = player?.seekToNextMediaItem()
     fun previous() = player?.seekToPreviousMediaItem()
     fun toggleRepeat() {
-        player?.repeatMode = when (player?.repeatMode) {
+        val nextMode = when (player?.repeatMode) {
             Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
             Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
             else -> Player.REPEAT_MODE_OFF
         }
+        viewModelScope.launch { settingsManager.saveRepeatMode(nextMode) }
     }
-    fun toggleShuffle() { player?.shuffleModeEnabled = !(player?.shuffleModeEnabled ?: false) }
+    fun toggleShuffle() { 
+        val nextShuffle = !(player?.shuffleModeEnabled ?: false)
+        viewModelScope.launch { settingsManager.saveShuffleMode(nextShuffle) }
+    }
     fun seekTo(pos: Long) = player?.seekTo(pos)
     fun updateSongInfo(songId: Long, newTitle: String, newArtist: String) {
-        settingsManager.saveSongOverride(songId, newTitle, newArtist)
-        rawSongs = rawSongs.map { if (it.id == songId) it.copy(title = newTitle, artist = newArtist) else it }
-        if (currentSong?.id == songId) currentSong = currentSong?.copy(title = newTitle, artist = newArtist)
+        viewModelScope.launch {
+            settingsManager.saveSongOverride(songId, newTitle, newArtist)
+            rawSongs = rawSongs.map { if (it.id == songId) it.copy(title = newTitle, artist = newArtist) else it }
+            if (currentSong?.id == songId) currentSong = currentSong?.copy(title = newTitle, artist = newArtist)
+        }
     }
+
     fun updateFolder(uri: android.net.Uri) {
-        settingsManager.saveMusicDirectory(uri)
-        selectedFolderUri = uri
-        loadSongs(getApplication())
+        viewModelScope.launch {
+            settingsManager.saveMusicDirectory(uri)
+            // loadSongs akan dipicu oleh observer
+        }
     }
     fun updateSortOrder(order: SortOrder) {
-        currentSortOrder = order
-        settingsManager.saveSortOrder(order)
-        updatePlayerPlaylist()
+        viewModelScope.launch {
+            settingsManager.saveSortOrder(order)
+            // playlist update logic will be triggered by rawSongs change or manual call if needed
+            // Actually, we should call updatePlayerPlaylist() here too if we want immediate sync
+            delay(100) // wait for flow
+            updatePlayerPlaylist()
+        }
     }
     fun updateLanguage(lang: String) {
-        currentLanguage = lang
-        settingsManager.saveLanguage(lang)
+        viewModelScope.launch {
+            settingsManager.saveLanguage(lang)
+        }
     }
     fun setSleepTimer(minutes: Int) {
         sleepTimer?.cancel()

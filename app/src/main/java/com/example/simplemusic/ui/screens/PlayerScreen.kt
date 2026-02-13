@@ -37,6 +37,11 @@ import com.example.simplemusic.ui.theme.*
 import com.example.simplemusic.ui.components.WavySlider
 import com.example.simplemusic.utils.formatTime
 
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FullPlayerGlass(
@@ -75,7 +80,24 @@ fun FullPlayerGlass(
         label = "albumArtScale"
     )
 
-    Box(modifier = Modifier.fillMaxSize().background(DarkBackground)) {
+    val haptic = LocalHapticFeedback.current
+    val playInteractionSource = remember { MutableInteractionSource() }
+    val isPlayPressed by playInteractionSource.collectIsPressedAsState()
+    val playScale by animateFloatAsState(if (isPlayPressed) 0.88f else 1f, label = "playScale")
+
+    val nextInteractionSource = remember { MutableInteractionSource() }
+    val isNextPressed by nextInteractionSource.collectIsPressedAsState()
+    val nextScale by animateFloatAsState(if (isNextPressed) 0.85f else 1f, label = "nextScale")
+
+    val prevInteractionSource = remember { MutableInteractionSource() }
+    val isPrevPressed by prevInteractionSource.collectIsPressedAsState()
+    val prevScale by animateFloatAsState(if (isPrevPressed) 0.85f else 1f, label = "prevScale")
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(DarkBackground)
+        .clickable(enabled = true, onClick = {}) // Consumes clicks to prevent ghost clicks to background
+    ) {
         // Blurred Background
         AsyncImage(
             model = song.albumArtUri, contentDescription = null,
@@ -215,13 +237,26 @@ fun FullPlayerGlass(
                 }
                 
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    IconButton(onClick = onPrevious) {
+                    IconButton(
+                        onClick = { 
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onPrevious() 
+                        },
+                        interactionSource = prevInteractionSource,
+                        modifier = Modifier.graphicsLayer { scaleX = prevScale; scaleY = prevScale }
+                    ) {
                         Icon(Icons.Rounded.SkipPrevious, null, modifier = Modifier.size(44.dp), tint = SoftWhite)
                     }
                     
                     Surface(
-                        onClick = onTogglePlay,
-                        modifier = Modifier.size(84.dp),
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onTogglePlay()
+                        },
+                        interactionSource = playInteractionSource,
+                        modifier = Modifier
+                            .size(84.dp)
+                            .graphicsLayer { scaleX = playScale; scaleY = playScale },
                         shape = CircleShape,
                         color = accentColor,
                         shadowElevation = 16.dp,
@@ -237,7 +272,14 @@ fun FullPlayerGlass(
                         }
                     }
 
-                    IconButton(onClick = onNext) {
+                    IconButton(
+                        onClick = { 
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onNext() 
+                        },
+                        interactionSource = nextInteractionSource,
+                        modifier = Modifier.graphicsLayer { scaleX = nextScale; scaleY = nextScale }
+                    ) {
                         Icon(Icons.Rounded.SkipNext, null, modifier = Modifier.size(44.dp), tint = SoftWhite)
                     }
                 }

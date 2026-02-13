@@ -3,100 +3,142 @@ package com.example.simplemusic.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.preferencesDataStore
+import com.example.simplemusic.model.SortOrder
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "music_settings")
 
 class SettingsManager(private val context: Context) {
-    private val prefs = context.getSharedPreferences("music_settings", Context.MODE_PRIVATE)
-    private val statsPrefs = context.getSharedPreferences("music_stats", Context.MODE_PRIVATE)
 
-    fun saveMusicDirectory(uri: Uri) {
+    private val musicDirKey = stringPreferencesKey("music_dir")
+    private val lastSongIdKey = longPreferencesKey("last_song_id")
+    private val lastPositionKey = longPreferencesKey("last_position")
+    private val sortOrderKey = stringPreferencesKey("sort_order")
+    private val shuffleModeKey = booleanPreferencesKey("shuffle_mode")
+    private val repeatModeKey = intPreferencesKey("repeat_mode")
+    private val lastRouteKey = stringPreferencesKey("last_route")
+    private val appLanguageKey = stringPreferencesKey("app_language")
+
+    // Dynamic keys helper
+    private fun playCountKey(songId: Long) = intPreferencesKey("play_count_$songId")
+    private fun dailyCountKey(dayOfWeek: Int) = intPreferencesKey("daily_count_$dayOfWeek")
+    private fun overrideTitleKey(songId: Long) = stringPreferencesKey("override_title_$songId")
+    private fun overrideArtistKey(songId: Long) = stringPreferencesKey("override_artist_$songId")
+
+    val musicDirectory: Flow<Uri?> = context.dataStore.data.map { prefs ->
+        prefs[musicDirKey]?.let { Uri.parse(it) }
+    }
+
+    suspend fun saveMusicDirectory(uri: Uri) {
         context.contentResolver.takePersistableUriPermission(
             uri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION
         )
-        prefs.edit().putString("music_dir", uri.toString()).apply()
+        context.dataStore.edit { it[musicDirKey] = uri.toString() }
     }
 
-    fun getMusicDirectory(): Uri? {
-        val uriString = prefs.getString("music_dir", null)
-        return uriString?.let { Uri.parse(it) }
+    suspend fun incrementPlayCount(songId: Long) {
+        val calendar = java.util.Calendar.getInstance()
+        val dayOfWeek = calendar.get(java.util.Calendar.DAY_OF_WEEK) // 1 (Sun) to 7 (Sat)
+
+        context.dataStore.edit { prefs ->
+            val current = prefs[playCountKey(songId)] ?: 0
+            prefs[playCountKey(songId)] = current + 1
+
+            val dailyCurrent = prefs[dailyCountKey(dayOfWeek)] ?: 0
+            prefs[dailyCountKey(dayOfWeek)] = dailyCurrent + 1
+        }
     }
 
-    // Statistik
-    fun incrementPlayCount(songId: Long) {
-        val current = statsPrefs.getInt(songId.toString(), 0)
-        statsPrefs.edit().putInt(songId.toString(), current + 1).apply()
+    fun getPlayCount(songId: Long): Flow<Int> = context.dataStore.data.map { it[playCountKey(songId)] ?: 0 }
+
+    fun getWeeklyActivity(): Flow<List<Float>> = context.dataStore.data.map { prefs ->
+        val activity = mutableListOf<Float>()
+        for (i in 1..7) {
+            activity.add((prefs[dailyCountKey(i)] ?: 0).toFloat())
+        }
+        val max = activity.maxOrNull() ?: 1f
+        if (max == 0f) activity.map { 0f } else activity.map { it / max }
     }
 
-    fun getPlayCount(songId: Long): Int {
-        return statsPrefs.getInt(songId.toString(), 0)
+    suspend fun resetStats() {
+        context.dataStore.edit { prefs ->
+            val keysToRemove = prefs.asMap().keys.filter { 
+                it.name.startsWith("play_count_") || it.name.startsWith("daily_count_") 
+            }
+            keysToRemove.forEach { prefs.remove(it) }
+        }
     }
 
-    fun saveLastPlayedSongId(songId: Long) {
-        prefs.edit().putLong("last_song_id", songId).apply()
+    suspend fun saveLastPlayedSongId(songId: Long) {
+        context.dataStore.edit { it[lastSongIdKey] = songId }
     }
 
-    fun getLastPlayedSongId(): Long {
-        return prefs.getLong("last_song_id", -1L)
+    suspend fun getLastPlayedSongId(): Long = context.dataStore.data.map { it[lastSongIdKey] ?: -1L }.first()
+
+    suspend fun saveLastPosition(position: Long) {
+        context.dataStore.edit { it[lastPositionKey] = position }
     }
 
-    fun saveLastPosition(position: Long) {
-        prefs.edit().putLong("last_position", position).apply()
+    suspend fun getLastPosition(): Long = context.dataStore.data.map { it[lastPositionKey] ?: 0L }.first()
+
+    suspend fun saveSortOrder(order: SortOrder) {
+        context.dataStore.edit { it[sortOrderKey] = order.name }
     }
 
-    fun getLastPosition(): Long {
-        return prefs.getLong("last_position", 0L)
+    val sortOrder: Flow<SortOrder> = context.dataStore.data.map { prefs ->
+        val name = prefs[sortOrderKey] ?: SortOrder.TITLE.name
+        try { SortOrder.valueOf(name) } catch (e: Exception) { SortOrder.TITLE }
     }
 
-    fun saveSortOrder(order: com.example.simplemusic.model.SortOrder) {
-        prefs.edit().putString("sort_order", order.name).apply()
+    suspend fun saveShuffleMode(enabled: Boolean) {
+        context.dataStore.edit { it[shuffleModeKey] = enabled }
     }
 
-    fun getSortOrder(): com.example.simplemusic.model.SortOrder {
-        val name = prefs.getString("sort_order", com.example.simplemusic.model.SortOrder.TITLE.name)
-        return try { com.example.simplemusic.model.SortOrder.valueOf(name!!) } catch(e: Exception) { com.example.simplemusic.model.SortOrder.TITLE }
+    val shuffleMode: Flow<Boolean> = context.dataStore.data.map { it[shuffleModeKey] ?: false }
+
+    suspend fun saveRepeatMode(mode: Int) {
+        context.dataStore.edit { it[repeatModeKey] = mode }
     }
 
-    fun saveShuffleMode(enabled: Boolean) {
-        prefs.edit().putBoolean("shuffle_mode", enabled).apply()
+    val repeatMode: Flow<Int> = context.dataStore.data.map { it[repeatModeKey] ?: 2 }
+
+    suspend fun saveLastRoute(route: String) {
+        context.dataStore.edit { it[lastRouteKey] = route }
     }
 
-    fun getShuffleMode(): Boolean {
-        return prefs.getBoolean("shuffle_mode", false)
+    suspend fun getLastRoute(): String? = context.dataStore.data.map { it[lastRouteKey] }.first()
+
+    suspend fun saveLanguage(languageCode: String) {
+        context.dataStore.edit { it[appLanguageKey] = languageCode }
     }
 
-    fun saveRepeatMode(mode: Int) {
-        prefs.edit().putInt("repeat_mode", mode).apply()
+    val appLanguage: Flow<String> = context.dataStore.data.map { it[appLanguageKey] ?: "system" }
+
+    suspend fun getLanguage(): String = appLanguage.first()
+
+    fun getLanguageSync(): String = runBlocking { getLanguage() }
+
+    suspend fun saveSongOverride(songId: Long, title: String, artist: String) {
+        context.dataStore.edit { prefs ->
+            prefs[overrideTitleKey(songId)] = title
+            prefs[overrideArtistKey(songId)] = artist
+        }
     }
 
-    fun getRepeatMode(): Int {
-        // Default to REPEAT_MODE_ALL (2)
-        return prefs.getInt("repeat_mode", 2)
+    suspend fun getSongOverride(songId: Long): Pair<String?, String?> {
+        val prefs = context.dataStore.data.first()
+        return prefs[overrideTitleKey(songId)] to prefs[overrideArtistKey(songId)]
     }
 
-    fun saveLastRoute(route: String) {
-        prefs.edit().putString("last_route", route).apply()
-    }
-
-    fun getLastRoute(): String? {
-        return prefs.getString("last_route", null)
-    }
-
-    fun saveLanguage(languageCode: String) {
-        prefs.edit().putString("app_language", languageCode).apply()
-    }
-
-    fun getLanguage(): String {
-        return prefs.getString("app_language", "system") ?: "system"
-    }
-
-    fun saveSongOverride(songId: Long, title: String, artist: String) {
-        prefs.edit().putString("override_title_$songId", title).apply()
-        prefs.edit().putString("override_artist_$songId", artist).apply()
-    }
-
-    fun getSongOverride(songId: Long): Pair<String?, String?> {
-        val title = prefs.getString("override_title_$songId", null)
-        val artist = prefs.getString("override_artist_$songId", null)
-        return title to artist
-    }
+    suspend fun getInitialSortOrder(): SortOrder = sortOrder.first()
+    suspend fun getInitialRepeatMode(): Int = repeatMode.first()
+    suspend fun getInitialShuffleMode(): Boolean = shuffleMode.first()
+    suspend fun getInitialLanguage(): String = appLanguage.first()
 }

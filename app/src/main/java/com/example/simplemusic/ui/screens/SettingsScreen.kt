@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.simplemusic.R
 import com.example.simplemusic.ui.theme.*
+import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.History
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +44,8 @@ fun SettingsScreen(
     onDirectorySelected: (Uri) -> Unit,
     onRefresh: () -> Unit,
     currentLanguage: String,
-    onLanguageSelected: (String) -> Unit
+    onLanguageSelected: (String) -> Unit,
+    onResetStats: () -> Unit
 ) {
     var selectedPath by remember { 
         mutableStateOf(currentUri?.path?.split(":")?.last() ?: "All Device Music (Default)") 
@@ -231,6 +234,42 @@ fun SettingsScreen(
                         Column {
                             Text(stringResource(R.string.scan_refresh), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                             Text(stringResource(R.string.scan_desc), style = MaterialTheme.typography.bodySmall, color = MutedText)
+                        }
+                    }
+                }
+                
+
+
+// ... (inside Column)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Reset Stats Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Red.copy(alpha = 0.05f)),
+                    border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.2f)),
+                    onClick = onResetStats
+                ) {
+                    Row(
+                        modifier = Modifier.padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.Red.copy(0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Rounded.DeleteSweep, contentDescription = null, tint = Color.Red.copy(0.8f), modifier = Modifier.size(26.dp))
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column {
+                            Text("Reset Statistics", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = Color.Red.copy(0.8f))
+                            Text("Clear play counts and activity", style = MaterialTheme.typography.bodySmall, color = MutedText)
                         }
                     }
                 }
